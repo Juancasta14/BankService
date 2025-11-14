@@ -1,9 +1,11 @@
 from flask import Flask, render_template_string, request
 import requests
+import os
 
 app = Flask(__name__)
 
-FASTAPI_BASE_URL = "http://127.0.0.1:8000"
+# URL base del servicio FastAPI (inyectada por docker-compose o por defecto localhost)
+FASTAPI_BASE_URL = os.getenv("FASTAPI_BASE_URL", "http://fastapi:8000")
 
 HTML_TEMPLATE = """
 <!doctype html>
@@ -50,19 +52,25 @@ HTML_TEMPLATE = """
 </html>
 """
 
+
 @app.route("/", methods=["GET"])
 def index():
     customer_id = request.args.get("customer_id", type=int)
     error = None
     summary = None
 
+    # Solo llamamos a FastAPI si el usuario puso un ID
     if customer_id is not None:
         try:
-            resp = requests.get(f"{FASTAPI_BASE_URL}/customers/{customer_id}/summary")
+            resp = requests.get(f"{FASTAPI_BASE_URL}/customers/{customer_id}/summary", timeout=5)
             if resp.status_code == 200:
                 summary = resp.json()
             else:
-                error = resp.json().get("detail", "Error consultando el servicio")
+                # Tratamos de leer el detalle si viene como JSON, si no, mensaje genérico
+                try:
+                    error = resp.json().get("detail", "Error consultando el servicio")
+                except Exception:
+                    error = f"Error consultando el servicio (status {resp.status_code})"
         except Exception as e:
             error = f"No se pudo conectar con el servicio: {e}"
 
@@ -73,5 +81,7 @@ def index():
         error=error,
     )
 
+
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    # ¡IMPORTANTE! host=0.0.0.0 para que responda fuera del contenedor
+    app.run(host="0.0.0.0", port=5000)

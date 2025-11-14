@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+
   db:
     image: postgres:16
     container_name: banco_db
@@ -38,7 +39,9 @@ services:
     depends_on:
       - fastapi
     ports:
-      - "5000:5000"
+      - "80:5000"
+    # Esto expone Flask en el puerto 80 del host para abrirlo directo en navegador:
+    # http://IP_PUBLICA
 
 volumes:
   pgdata:
