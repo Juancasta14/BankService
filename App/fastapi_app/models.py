@@ -6,6 +6,7 @@ from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import declarative_base, Session
 from pydantic import BaseModel
 from datetime import date
+from enum import Enum
 
 Base = declarative_base()
 
