@@ -189,55 +189,69 @@ class TransferRequest(BaseModel):
     amount: float
 
 @app.post("/customers/{customer_id}/transfer")
-def make_transfer(from_account_id: int, to_account_id: int, amount: float, db: Session = Depends(get_db)):
-    
+def make_transfer(req: TransferRequest, db: Session = Depends(get_db)):
+
+    from_account_id = req.from_account_id
+    to_account_id = req.to_account_id
+    amount = req.amount
+
     if amount <= 0:
-        return {"error": "El monto debe ser mayor que cero"}
+        raise HTTPException(status_code=400, detail="El monto debe ser mayor que cero")
+
+    if from_account_id == to_account_id:
+        raise HTTPException(status_code=400, detail="La cuenta origen y destino no pueden ser iguales")
 
     # Obtener cuentas
     acc_out = db.query(AccountDB).filter(AccountDB.id == from_account_id).first()
     acc_in  = db.query(AccountDB).filter(AccountDB.id == to_account_id).first()
 
-    if not acc_out or not acc_in:
-        return {"error": "Cuenta origen o destino no encontrada"}
+    if not acc_out:
+        raise HTTPException(status_code=404, detail="Cuenta de origen no encontrada")
+    if not acc_in:
+        raise HTTPException(status_code=404, detail="Cuenta de destino no encontrada")
 
     if acc_out.balance < amount:
-        return {"error": "Fondos insuficientes"}
+        raise HTTPException(status_code=400, detail="Fondos insuficientes en la cuenta de origen")
 
-    # Actualizar balances
-    acc_out.balance -= amount
-    acc_in.balance  += amount
+    try:
+        # Actualizar balances
+        acc_out.balance -= amount
+        acc_in.balance  += amount
 
-    # Fecha actual ISO
-    now = datetime.now().strftime("%Y-%m-%d")
+        # Fecha actual
+        now = datetime.now().strftime("%Y-%m-%d")
 
-    # Movimiento salida
-    mov_out = MovementDB(
-        account_id = acc_out.id,
-        customer_id = acc_out.customer_id,
-        account_type = acc_out.type,   # opcional
-        date = now,
-        description = f"Transferencia enviada a cuenta {acc_in.id}",
-        amount = -amount,
-        type = "transfer_out"
-    )
+        # Movimiento salida
+        mov_out = MovementDB(
+            account_id = acc_out.id,
+            customer_id = acc_out.customer_id,
+            account_type = acc_out.type,
+            date = now,
+            description = f"Transferencia enviada a cuenta {acc_in.id}",
+            amount = -amount,
+            type = "transfer_out"
+        )
 
-    # Movimiento entrada
-    mov_in = MovementDB(
-        account_id = acc_in.id,
-        customer_id = acc_in.customer_id,
-        account_type = acc_in.type,
-        date = now,
-        description = f"Transferencia recibida desde cuenta {acc_out.id}",
-        amount = amount,
-        type = "transfer_in"
-    )
+        # Movimiento entrada
+        mov_in = MovementDB(
+            account_id = acc_in.id,
+            customer_id = acc_in.customer_id,
+            account_type = acc_in.type,
+            date = now,
+            description = f"Transferencia recibida desde cuenta {acc_out.id}",
+            amount = amount,
+            type = "transfer_in"
+        )
 
-    db.add_all([mov_out, mov_in])
-    db.commit()
+        db.add_all([mov_out, mov_in])
+        db.commit()
 
-    return {"message": "Transferencia realizada correctamente"}
-    
+        return {"message": "Transferencia realizada correctamente"}
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error interno al procesar la transferencia: {str(e)}")
+        
 @app.get("/")
 def root():
     return {"message": "FastAPI Bank Service with Auth Running!"}
