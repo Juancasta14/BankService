@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import declarative_base, Session
 from pydantic import BaseModel
 from datetime import date
