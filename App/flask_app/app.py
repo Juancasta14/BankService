@@ -697,7 +697,12 @@ consulta_template = """
                         </button>
                     </div>
                 </form>
-
+                                <div class="back-link">
+                    <a href="{{ url_for('transferencias') }}">
+                        <i class="fa-solid fa-chevron-left"></i>
+                        Trasnferir
+                    </a>
+                </div>
                 {% if error %}
                     <div class="error-message">
                         <i class="fa-solid fa-circle-exclamation"></i>
@@ -1251,12 +1256,7 @@ movimientos_template = """
                     {% endif %}
                 </form>
 
-                <div class="back-link">
-                    <a href="{{ url_for('transferencias') }}">
-                        <i class="fa-solid fa-chevron-left"></i>
-                        Ir a la consulta de saldos
-                    </a>
-                </div>
+
             </div>
 
             <!-- Lista de movimientos -->
