@@ -229,7 +229,7 @@ LOGIN_TEMPLATE = """
                 <i class="fa-solid fa-building-columns"></i>
             </div>
 
-            <h1>Banco Demo</h1>
+            <h1>Banco</h1>
             <p class="subtitle">Inicia sesión para consultar los saldos de tus clientes</p>
 
             {% if error %}
@@ -305,51 +305,484 @@ LOGIN_TEMPLATE = """
 """
 
 
-HTML_TEMPLATE = """
-<!doctype html>
+consulta_template = """
+<!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <title>Consulta de Saldos</title>
+    <meta charset="UTF-8" />
+    <title>Consulta de Saldos - Banco Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+    />
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #dcebff 0%, #f1f7ff 40%, #e0f0ff 100%);
+            display: flex;
+            justify-content: center;
+            padding: 24px 12px;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 960px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            color: #16396b;
+        }
+
+        .top-bar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .top-bar-title i {
+            font-size: 26px;
+            color: #355adf;
+        }
+
+        .user-info {
+            font-size: 14px;
+        }
+
+        .user-info strong {
+            font-weight: 700;
+        }
+
+        .user-info a {
+            color: #c0392b;
+            text-decoration: none;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        .user-info a:hover {
+            text-decoration: underline;
+        }
+
+        .glass-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+            gap: 18px;
+        }
+
+        @media (max-width: 800px) {
+            .glass-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .glass-card {
+            position: relative;
+            padding: 22px 20px 18px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            box-shadow: 0 16px 42px rgba(15, 60, 120, 0.18);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 12px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #16396b;
+        }
+
+        .card-title i {
+            color: #355adf;
+        }
+
+        form.consulta-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #304468;
+            margin-bottom: 4px;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="number"] {
+            border-radius: 999px;
+            border: 1px solid rgba(151, 177, 221, 0.8);
+            padding: 9px 14px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            outline: none;
+            transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        input[type="number"]:focus {
+            border-color: #4c8dff;
+            box-shadow: 0 0 0 3px rgba(76, 141, 255, 0.25);
+            background: #ffffff;
+        }
+
+        .btn-container {
+            margin-top: 6px;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        button[type="submit"] {
+            position: relative;
+            border: none;
+            border-radius: 999px;
+            padding: 9px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #4c8dff 0%, #355adf 100%);
+            color: #ffffff;
+            box-shadow: 0 8px 18px rgba(53, 90, 223, 0.35);
+            transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+            overflow: hidden;
+        }
+
+        button[type="submit"]:hover {
+            filter: brightness(1.05);
+            box-shadow: 0 10px 22px rgba(53, 90, 223, 0.42);
+            transform: translateY(-1px);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 12px rgba(53, 90, 223, 0.35);
+        }
+
+        button[type="submit"]:disabled {
+            cursor: default;
+            filter: grayscale(0.1) brightness(0.95);
+            box-shadow: 0 4px 12px rgba(53, 90, 223, 0.25);
+        }
+
+        .btn-content,
+        .btn-loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-loader {
+            position: absolute;
+            inset: 0;
+            display: none;
+        }
+
+        #consultaBtn.loading .btn-content {
+            visibility: hidden;
+        }
+
+        #consultaBtn.loading .btn-loader {
+            display: flex;
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: #5b6f90;
+            margin-top: 4px;
+        }
+
+        .error-message {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #d0342c;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 10px;
+        }
+
+        .summary-main-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #16396b;
+        }
+
+        .summary-tag {
+            font-size: 12px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(76, 141, 255, 0.12);
+            color: #355adf;
+            font-weight: 600;
+        }
+
+        .summary-sub {
+            font-size: 13px;
+            color: #4f5f80;
+        }
+
+        .summary-sub span {
+            font-weight: 600;
+        }
+
+        .account-list {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .account-card {
+            border-radius: 14px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(198, 210, 240, 0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .account-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .account-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            color: #29446e;
+        }
+
+        .account-type i {
+            color: #355adf;
+        }
+
+        .account-id {
+            font-size: 11px;
+            color: #7a8cb0;
+        }
+
+        .account-balance {
+            font-size: 15px;
+            font-weight: 700;
+            color: #16396b;
+        }
+
+        .wallet-card {
+            margin-top: 12px;
+            border-radius: 14px;
+            padding: 10px 12px;
+            background: rgba(231, 252, 244, 0.9);
+            border: 1px solid rgba(152, 224, 195, 0.9);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .wallet-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #166a4e;
+        }
+
+        .wallet-info i {
+            color: #16a085;
+        }
+
+        .wallet-amount {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0e5139;
+        }
+
+        .no-data {
+            font-size: 13px;
+            color: #6c7a96;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Consulta de Saldos del Cliente</h1>
+    <div class="page-wrapper">
+        <div class="top-bar">
+            <div class="top-bar-title">
+                <i class="fa-solid fa-building-columns"></i>
+                <span>Consulta de Saldos del Cliente</span>
+            </div>
+            <div class="user-info">
+                Usuario: <strong>{{ username }}</strong>
+                |
+                <a href="{{ url_for('logout') }}">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                </a>
+            </div>
+        </div>
 
-    <p>Usuario: <strong>{{ username }}</strong> |
-       <a href="{{ url_for('logout') }}">Cerrar sesión</a>
-    </p>
+        <div class="glass-layout">
+            <!-- Columna izquierda: formulario -->
+            <div class="glass-card">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-magnifying-glass-dollar"></i>
+                    <span>Buscar cliente</span>
+                </h2>
 
-    <form method="get">
-        <label for="customer_id">ID del cliente:</label>
-        <input type="number" name="customer_id" id="customer_id" value="{{ customer_id or '' }}" required>
-        <button type="submit">Consultar</button>
-    </form>
+                <form id="consultaForm" class="consulta-form" method="post">
+                    <div class="field-group">
+                        <label for="customer_id">ID del cliente</label>
+                        <input
+                            type="number"
+                            id="customer_id"
+                            name="customer_id"
+                            min="1"
+                            value="{{ customer_id or '' }}"
+                            required
+                        />
+                        <div class="helper-text">
+                            Ejemplos de prueba: <strong>100</strong> o <strong>101</strong>.
+                        </div>
+                    </div>
 
-    {% if error %}
-        <p style="color:red;">{{ error }}</p>
-    {% endif %}
+                    <div class="btn-container">
+                        <button type="submit" id="consultaBtn">
+                            <span class="btn-content">
+                                <i class="fa-solid fa-file-circle-search"></i>
+                                <span>Consultar</span>
+                            </span>
+                            <span class="btn-loader">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                <span>Consultando...</span>
+                            </span>
+                        </button>
+                    </div>
+                </form>
 
-    {% if summary %}
-        <h2>Resumen del cliente {{ summary.customer_id }}</h2>
-        <h3>Cuentas</h3>
-        <ul>
-        {% for acc in summary.accounts %}
-            <li>
-                Cuenta #{{ acc.id }} ({{ acc.type }}): ${{ "%.2f"|format(acc.balance) }}
-            </li>
-        {% endfor %}
-        </ul>
+                {% if error %}
+                    <div class="error-message">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span>{{ error }}</span>
+                    </div>
+                {% endif %}
+            </div>
 
-        <h3>Billetera</h3>
-        {% if summary.wallet %}
-            <p>Billetera #{{ summary.wallet.id }}: ${{ "%.2f"|format(summary.wallet.balance) }}</p>
-        {% else %}
-            <p>El cliente no tiene billetera.</p>
-        {% endif %}
+            <!-- Columna derecha: resultados -->
+            <div class="glass-card">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Resumen del cliente</span>
+                </h2>
 
-        <h3>Total</h3>
-        <p><strong>${{ "%.2f"|format(summary.total_balance) }}</strong></p>
-    {% endif %}
+                {% if summary %}
+                    <div class="summary-header">
+                        <div>
+                            <div class="summary-main-amount">
+                                $ {{ '%.2f' | format(summary.total_balance) }}
+                            </div>
+                            <div class="summary-sub">
+                                Saldo total consolidado para cliente
+                                <span>#{{ summary.customer_id }}</span>
+                            </div>
+                        </div>
+                        <div class="summary-tag">
+                            <i class="fa-solid fa-circle-check"></i>
+                            Cliente encontrado
+                        </div>
+                    </div>
+
+                    <div class="account-list">
+                        {% for acc in summary.accounts %}
+                            <div class="account-card">
+                                <div class="account-card-header">
+                                    <div class="account-type">
+                                        <i class="fa-solid fa-credit-card"></i>
+                                        <span>{{ acc.type | capitalize }}</span>
+                                    </div>
+                                    <div class="account-id">
+                                        ID cuenta: {{ acc.id }}
+                                    </div>
+                                </div>
+                                <div class="account-balance">
+                                    $ {{ '%.2f' | format(acc.balance) }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if summary.wallet %}
+                        <div class="wallet-card">
+                            <div class="wallet-info">
+                                <i class="fa-solid fa-wallet"></i>
+                                <span>Billetera digital</span>
+                            </div>
+                            <div class="wallet-amount">
+                                $ {{ '%.2f' | format(summary.wallet.balance) }}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <p class="no-data">
+                        <i class="fa-regular fa-circle-question"></i>
+                        Ingresa un ID de cliente y presiona "Consultar" para ver el resumen de cuentas y billetera.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const form = document.getElementById("consultaForm");
+            const btn = document.getElementById("consultaBtn");
+
+            if (form && btn) {
+                form.addEventListener("submit", function () {
+                    btn.classList.add("loading");
+                    btn.disabled = true;
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
 """
@@ -372,7 +805,7 @@ def login():
                 data = resp.json()
                 session["token"] = data["access_token"]
                 session["username"] = data["username"]
-                return redirect(url_for("index"))
+                return redirect(url_for("consultar_saldos"))
             else:
                 try:
                     error = resp.json().get("detail", "Credenciales inválidas")
@@ -389,44 +822,49 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
-
-@app.route("/", methods=["GET"])
-def index():
-    # Si no hay token, mandar al login
-    token = session.get("token")
-    username = session.get("username")
-    if not token:
+@app.route("/saldos", methods=["GET", "POST"])
+def consultar_saldos():
+    if "token" not in session:
         return redirect(url_for("login"))
 
-    customer_id = request.args.get("customer_id", type=int)
-    error = None
+    username = session.get("username")
+    customer_id = None
     summary = None
+    error = None
 
-    if customer_id is not None:
-        headers = {"Authorization": f"Bearer {token}"}
-        try:
-            resp = requests.get(
-                f"{FASTAPI_BASE_URL}/customers/{customer_id}/summary",
-                headers=headers,
-                timeout=5,
-            )
-            if resp.status_code == 200:
-                summary = resp.json()
-            else:
-                try:
-                    error = resp.json().get("detail", f"Error consultando el servicio (status {resp.status_code})")
-                except Exception:
-                    error = f"Error consultando el servicio (status {resp.status_code})"
-        except Exception as e:
-            error = f"No se pudo conectar con el servicio: {e}"
+    if request.method == "POST":
+        customer_id = request.form.get("customer_id")
+        if not customer_id:
+            error = "Debes ingresar un ID de cliente."
+        else:
+            try:
+                resp = requests.get(
+                    f"{FASTAPI_BASE_URL}/customers/{customer_id}/summary",
+                    headers={"Authorization": f"Bearer {session['token']}",
+                    },
+                    timeout=5,
+                )
+                if resp.status_code == 200:
+                    summary = resp.json()
+                elif resp.status_code == 404:
+                    error = "No se encontró un cliente con ese ID."
+                elif resp.status_code == 401:
+                    # Token inválido o expirado
+                    session.clear()
+                    return redirect(url_for("login"))
+                else:
+                    error = f"Error consultando el servicio (status {resp.status_code})."
+            except Exception as e:
+                error = f"No se pudo conectar con el servicio: {e}"
 
     return render_template_string(
-        HTML_TEMPLATE,
+        consulta_template,
+        username=username,
         customer_id=customer_id,
         summary=summary,
         error=error,
-        username=username or "desconocido",
     )
+
 
 
 if __name__ == "__main__":
