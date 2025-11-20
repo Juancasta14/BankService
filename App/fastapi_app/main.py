@@ -190,7 +190,6 @@ class TransferRequest(BaseModel):
 
 @app.post("/customers/{customer_id}/transfer")
 def make_transfer(req: TransferRequest, db: Session = Depends(get_db)):
-
     from_account_id = req.from_account_id
     to_account_id = req.to_account_id
     amount = req.amount
@@ -201,7 +200,6 @@ def make_transfer(req: TransferRequest, db: Session = Depends(get_db)):
     if from_account_id == to_account_id:
         raise HTTPException(status_code=400, detail="La cuenta origen y destino no pueden ser iguales")
 
-    # Obtener cuentas
     acc_out = db.query(AccountDB).filter(AccountDB.id == from_account_id).first()
     acc_in  = db.query(AccountDB).filter(AccountDB.id == to_account_id).first()
 
@@ -214,33 +212,31 @@ def make_transfer(req: TransferRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Fondos insuficientes en la cuenta de origen")
 
     try:
-        # Actualizar balances
+        # Actualizar saldos
         acc_out.balance -= amount
         acc_in.balance  += amount
 
-        # Fecha actual
         now = datetime.now().strftime("%Y-%m-%d")
 
-        # Movimiento salida
         mov_out = MovementDB(
-            account_id = acc_out.id,
-            customer_id = acc_out.customer_id,
+            account_id   = acc_out.id,
+            customer_id  = acc_out.customer_id,
             account_type = acc_out.type,
-            date = now,
-            description = f"Transferencia enviada a cuenta {acc_in.id}",
-            amount = -amount,
-            type = "transfer_out"
+            date         = now,
+            description  = f"Transferencia enviada a cuenta {acc_in.id}",
+            amount       = amount,        # positivo
+            type         = "debito",      # <- clave
         )
 
-        # Movimiento entrada
+
         mov_in = MovementDB(
-            account_id = acc_in.id,
-            customer_id = acc_in.customer_id,
+            account_id   = acc_in.id,
+            customer_id  = acc_in.customer_id,
             account_type = acc_in.type,
-            date = now,
-            description = f"Transferencia recibida desde cuenta {acc_out.id}",
-            amount = amount,
-            type = "transfer_in"
+            date         = now,
+            description  = f"Transferencia recibida desde cuenta {acc_out.id}",
+            amount       = amount,        # positivo
+            type         = "credito",     # <- clave
         )
 
         db.add_all([mov_out, mov_in])
@@ -250,7 +246,7 @@ def make_transfer(req: TransferRequest, db: Session = Depends(get_db)):
 
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error interno al procesar la transferencia: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error interno al procesar la transferencia: {e}")
         
 @app.get("/")
 def root():
