@@ -698,13 +698,17 @@ consulta_template = """
                     </div>
                 </form>
                 <div class="btn-container">
-                        <button type="submit" id="transferBtn">
-                            <span class="btn-content">
-                                <i class="fa-solid fa-file-circle-search"></i>
-                                <span href="{{ url_for('transferencias') }}">Transferir</span>
-                            </span>
-                        </button>
-                    </div>
+    <button
+        type="button"
+        id="transferBtn"
+        onclick="window.location.href='{{ url_for('transferencias') }}?customer_id={{ customer_id or (summary.customer_id if summary else '') }}'"
+    >
+        <span class="btn-content">
+            <i class="fa-solid fa-arrow-right-arrow-left"></i>
+            <span>Transferir</span>
+        </span>
+    </button>
+</div>
                         
                 {% if error %}
                     <div class="error-message">
