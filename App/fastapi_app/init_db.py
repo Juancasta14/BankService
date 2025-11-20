@@ -19,10 +19,10 @@ def init():
         if not user:
             new_user = UserDB(
                 username="admin",
-                hashed_password=hash_password("admin"),
+                hashed_password=hash_password("password123"),
             )
             db.add(new_user)
-            print("Usuario creado: admin / admin")
+            print("Usuario creado: admin / password123")
         else:
             print("Ya existe al menos un usuario, no se crea otro.")
 
