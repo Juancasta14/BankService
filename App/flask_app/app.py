@@ -642,35 +642,51 @@ consulta_template = """
             align-items: center;
             gap: 6px;
         }
-        .btn-transfer {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 26px;
-    background: linear-gradient(180deg, #4c8dff, #3b76e5);
-    color: white;
-    border-radius: 12px;
-    font-size: 1.15rem;
-    font-weight: 600;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgba(76, 141, 255, 0.3);
-    transition: all 0.2s ease;
+/* Tooltip base */
+.btn-transfer {
+    position: relative;
 }
 
-.btn-transfer i {
-    font-size: 1.2rem;
+/* Estilo del tooltip */
+.btn-transfer::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(8px);
+    padding: 8px 14px;
+    border-radius: 10px;
+    white-space: nowrap;
+    color: #1b2a4a;
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(76, 141, 255, 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
-.btn-transfer:hover {
-    background: linear-gradient(180deg, #5b9aff, #447fe9);
-    box-shadow: 0 6px 16px rgba(76, 141, 255, 0.45);
-    transform: translateY(-2px);
+/* Flechita */
+.btn-transfer::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.25) transparent transparent transparent;
+    opacity: 0;
+    transition: opacity 0.25s ease;
 }
 
-.btn-transfer:active {
-    transform: scale(0.97);
+/* Mostrar tooltip */
+.btn-transfer:hover::after,
+.btn-transfer:hover::before {
+    opacity: 1;
 }
     </style>
 </head>
@@ -729,11 +745,13 @@ consulta_template = """
                 </form>
                 <div class="btn-container">
 <div class="btn-container">
-    <a href="{{ url_for('transferencias') }}?customer_id={{ customer_id or '' }}" class="btn-transfer">
+    <a href="{{ url_for('transferencias') }}?customer_id={{ customer_id or '' }}"
+       class="btn-transfer"
+       data-tooltip="Realizar transferencia entre cuentas">
         <i class="fa-solid fa-arrow-right-arrow-left"></i>
         <span>Transferir</span>
     </a>
- </div>
+</div>
 </div>                       
                 {% if error %}
                     <div class="error-message">
