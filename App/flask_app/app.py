@@ -2059,48 +2059,57 @@ def transferencias():
                 error = f"No se pudieron obtener las cuentas (status {resp.status_code})."
         except Exception as e:
             error = f"No se pudo conectar con el servicio de cuentas: {e}"
-
+            
     # 2. Procesar transferencia
+    
     if request.method == "POST":
-        customer_id = request.form.get("customer_id")
-        origin_account = request.form.get("origin_account")
-        destination_account = request.form.get("destination_account")
-        amount = request.form.get("amount")
+    customer_id = request.form.get("customer_id")
+    origin_account = request.form.get("origin_account")
+    destination_account = request.form.get("destination_account")
+    amount = request.form.get("amount")
 
-        if not customer_id or not origin_account or not destination_account or not amount:
-            error = "Todos los campos son obligatorios."
-        else:
-            try:
-                data = {
-                    "origin_account": int(origin_account),
-                    "destination_account": int(destination_account),
-                    "amount": float(amount),
-                }
-                resp = requests.post(
-                    f"{FASTAPI_BASE_URL}/customers/{customer_id}/transfer",
-                    json=data,
+    if not customer_id or not origin_account or not destination_account or not amount:
+        error = "Todos los campos son obligatorios."
+    else:
+        try:
+            params = {
+                "from_account_id": int(origin_account),
+                "to_account_id": int(destination_account),
+                "amount": float(amount),
+            }
+
+            resp = requests.post(
+                f"{FASTAPI_BASE_URL}/transfer",   
+                params=params,                    
+                headers={"Authorization": f"Bearer {session['token']}"},
+                timeout=5,
+            )
+
+            if resp.status_code == 200:
+                message = "Transferencia realizada con éxito."
+                error = None
+
+                # refrescar saldos
+                acc_resp = requests.get(
+                    f"{FASTAPI_BASE_URL}/customers/{customer_id}/accounts",
                     headers={"Authorization": f"Bearer {session['token']}"},
                     timeout=5,
                 )
-                if resp.status_code == 200:
-                    message = "Transferencia realizada con éxito."
-                    error = None
-                    # refrescar cuentas con saldos actualizados
-                    acc_resp = requests.get(
-                        f"{FASTAPI_BASE_URL}/customers/{customer_id}/accounts",
-                        headers={"Authorization": f"Bearer {session['token']}"},
-                        timeout=5,
-                    )
-                    if acc_resp.status_code == 200:
-                        accounts = acc_resp.json()
-                else:
-                    try:
-                        detail = resp.json().get("detail")
-                    except Exception:
-                        detail = resp.text
-                    error = f"Error realizando la transferencia: {detail}"
-            except Exception as e:
-                error = f"No se pudo conectar con el servicio de transferencias: {e}"
+                if acc_resp.status_code == 200:
+                    accounts = acc_resp.json()
+            else:
+                try:
+                    detail = resp.json().get("detail")
+                except Exception:
+                    detail = resp.text
+                error = f"Error realizando la transferencia: {detail}"
+
+        except Exception as e:
+            error = f"No se pudo conectar con el servicio de transferencias: {e}"
+
+
+
+
 
     return render_template_string(
         transfer_template,
