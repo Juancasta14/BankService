@@ -14,8 +14,17 @@ LOGIN_TEMPLATE = """
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
-    <title>Login - Banco</title>
+    <title>Login - Banco Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Font Awesome para iconos -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+    />
 
     <style>
         * {
@@ -124,6 +133,7 @@ LOGIN_TEMPLATE = """
         }
 
         button[type="submit"] {
+            position: relative;
             width: 100%;
             border: none;
             border-radius: 999px;
@@ -135,6 +145,7 @@ LOGIN_TEMPLATE = """
             color: #ffffff;
             box-shadow: 0 8px 18px rgba(53, 90, 223, 0.35);
             transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+            overflow: hidden;
         }
 
         button[type="submit"]:hover {
@@ -146,6 +157,34 @@ LOGIN_TEMPLATE = """
         button[type="submit"]:active {
             transform: translateY(0);
             box-shadow: 0 4px 12px rgba(53, 90, 223, 0.35);
+        }
+
+        button[type="submit"]:disabled {
+            cursor: default;
+            filter: grayscale(0.1) brightness(0.95);
+            box-shadow: 0 4px 12px rgba(53, 90, 223, 0.25);
+        }
+
+        .btn-content,
+        .btn-loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-loader {
+            position: absolute;
+            inset: 0;
+            display: none;
+        }
+
+        #loginBtn.loading .btn-content {
+            visibility: hidden;
+        }
+
+        #loginBtn.loading .btn-loader {
+            display: flex;
         }
 
         .extra-links {
@@ -187,17 +226,20 @@ LOGIN_TEMPLATE = """
     <div class="login-container">
         <div class="glass-card">
             <div class="logo-circle">
-                B
+                <i class="fa-solid fa-building-columns"></i>
             </div>
 
-            <h1>Banco</h1>
+            <h1>Banco Demo</h1>
             <p class="subtitle">Inicia sesión para consultar los saldos de tus clientes</p>
 
             {% if error %}
-                <p class="error-message">{{ error }}</p>
+                <p class="error-message">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    {{ error }}
+                </p>
             {% endif %}
 
-            <form method="post">
+            <form id="loginForm" method="post">
                 <div class="field-group">
                     <label for="username">Usuario</label>
                     <input
@@ -222,15 +264,42 @@ LOGIN_TEMPLATE = """
                 </div>
 
                 <div class="btn-container">
-                    <button type="submit">Entrar</button>
+                    <button type="submit" id="loginBtn">
+                        <span class="btn-content">
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                            <span>Entrar</span>
+                        </span>
+                        <span class="btn-loader">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i>
+                            <span>Validando...</span>
+                        </span>
+                    </button>
                 </div>
             </form>
 
             <div class="extra-links">
-                <span>Acceso exclusivo para personal autorizado del banco.</span>
+                <span>
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Acceso exclusivo para personal autorizado del banco.
+                </span>
             </div>
         </div>
     </div>
+
+    <script>
+        (function () {
+            const form = document.getElementById("loginForm");
+            const btn = document.getElementById("loginBtn");
+
+            if (form && btn) {
+                form.addEventListener("submit", function () {
+                    // Evita doble click
+                    btn.classList.add("loading");
+                    btn.disabled = true;
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
 """
