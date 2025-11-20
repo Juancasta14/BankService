@@ -697,12 +697,15 @@ consulta_template = """
                         </button>
                     </div>
                 </form>
-                                <div class="back-link">
-                    <a href="{{ url_for('transferencias') }}">
-                        <i class="fa-solid fa-chevron-left"></i>
-                        Trasnferir
-                    </a>
-                </div>
+                <div class="btn-container">
+                        <button type="submit" id="transferBtn">
+                            <span class="btn-content" href="{{ url_for('transferencias') }}">
+                                <i class="fa-solid fa-file-circle-search"></i>
+                                <span>Transferir</span>
+                            </span>
+                        </button>
+                    </div>
+                        
                 {% if error %}
                     <div class="error-message">
                         <i class="fa-solid fa-circle-exclamation"></i>
