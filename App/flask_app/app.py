@@ -190,7 +190,7 @@ LOGIN_TEMPLATE = """
                 B
             </div>
 
-            <h1>Banco Demo</h1>
+            <h1>Banco</h1>
             <p class="subtitle">Inicia sesión para consultar los saldos de tus clientes</p>
 
             {% if error %}
