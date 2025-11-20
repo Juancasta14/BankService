@@ -733,8 +733,8 @@ consulta_template = """
         <i class="fa-solid fa-arrow-right-arrow-left"></i>
         <span>Transferir</span>
     </a>
-</div>
-                        
+ </div>
+</div>                       
                 {% if error %}
                     <div class="error-message">
                         <i class="fa-solid fa-circle-exclamation"></i>
