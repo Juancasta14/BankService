@@ -32,10 +32,6 @@ Base.metadata.create_all(bind=engine)
 # Donde FastAPI “cree” que está el endpoint de login
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-class TransferRequest(BaseModel):
-    origin_account: int
-    destination_account: int
-    amount: float
 # ========= DEPENDENCIA: usuario actual a partir del token =========
 
 def get_current_user(
@@ -186,6 +182,11 @@ def get_customer_movements(
         date_to=date_to,
     )
     return movimientos_db
+    
+class TransferRequest(BaseModel):
+    from_account_id: int
+    to_account_id: int
+    amount: float
 
 @app.post("/customers/{customer_id}/transfer")
 def make_transfer(from_account_id: int, to_account_id: int, amount: float, db: Session = Depends(get_db)):
