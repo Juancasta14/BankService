@@ -10,26 +10,227 @@ app.secret_key = "Juan_Cristian_Jorge"
 FASTAPI_BASE_URL = os.getenv("FASTAPI_BASE_URL", "http://banco_fastapi:8000")
 
 LOGIN_TEMPLATE = """
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8" />
     <title>Login - Banco</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #dcebff 0%, #f1f7ff 40%, #e0f0ff 100%);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .glass-card {
+            position: relative;
+            padding: 32px 28px 26px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            box-shadow: 0 18px 45px rgba(15, 60, 120, 0.18);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+        }
+
+        .logo-circle {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 20%, #ffffff 0%, #4c8dff 60%, #355adf 100%);
+            box-shadow: 0 10px 20px rgba(0, 70, 160, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            margin-top: 12px;
+            margin-bottom: 6px;
+            text-align: center;
+            font-size: 26px;
+            color: #16396b;
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 22px;
+            font-size: 14px;
+            color: #4c5c7a;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #304468;
+            margin-bottom: 4px;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            border-radius: 999px;
+            border: 1px solid rgba(151, 177, 221, 0.8);
+            padding: 10px 14px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.8);
+            outline: none;
+            transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #4c8dff;
+            box-shadow: 0 0 0 3px rgba(76, 141, 255, 0.25);
+            background: #ffffff;
+        }
+
+        .btn-container {
+            margin-top: 10px;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            border: none;
+            border-radius: 999px;
+            padding: 11px 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #4c8dff 0%, #355adf 100%);
+            color: #ffffff;
+            box-shadow: 0 8px 18px rgba(53, 90, 223, 0.35);
+            transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+        }
+
+        button[type="submit"]:hover {
+            filter: brightness(1.05);
+            box-shadow: 0 10px 24px rgba(53, 90, 223, 0.4);
+            transform: translateY(-1px);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 12px rgba(53, 90, 223, 0.35);
+        }
+
+        .extra-links {
+            margin-top: 14px;
+            font-size: 12px;
+            text-align: center;
+            color: #58709b;
+        }
+
+        .extra-links a {
+            color: #355adf;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .extra-links a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            margin-top: 10px;
+            margin-bottom: 0;
+            font-size: 13px;
+            color: #d0342c;
+            text-align: center;
+        }
+
+        @media (max-width: 480px) {
+            .glass-card {
+                padding: 26px 20px 22px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Login</h1>
+    <div class="login-container">
+        <div class="glass-card">
+            <div class="logo-circle">
+                B
+            </div>
 
-    {% if error %}
-        <p style="color:red;">{{ error }}</p>
-    {% endif %}
+            <h1>Banco Demo</h1>
+            <p class="subtitle">Inicia sesión para consultar los saldos de tus clientes</p>
 
-    <form method="post">
-        <label>Usuario:</label>
-        <input type="text" name="username" required><br><br>
-        <label>Contraseña:</label>
-        <input type="password" name="password" required><br><br>
-        <button type="submit">Entrar</button>
-    </form>
+            {% if error %}
+                <p class="error-message">{{ error }}</p>
+            {% endif %}
+
+            <form method="post">
+                <div class="field-group">
+                    <label for="username">Usuario</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        autocomplete="username"
+                        value="{{ request.form.get('username', '') }}"
+                        required
+                    />
+                </div>
+
+                <div class="field-group">
+                    <label for="password">Contraseña</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        autocomplete="current-password"
+                        required
+                    />
+                </div>
+
+                <div class="btn-container">
+                    <button type="submit">Entrar</button>
+                </div>
+            </form>
+
+            <div class="extra-links">
+                <span>Acceso exclusivo para personal autorizado del banco.</span>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 """
