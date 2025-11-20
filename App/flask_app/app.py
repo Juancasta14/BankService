@@ -1413,6 +1413,7 @@ def consultar_saldos():
         customer_id=customer_id,
         summary=summary,
         error=error,
+        url_for=url_for,
     )
 
 @app.route("/movimientos", methods=["GET", "POST"])
