@@ -1335,7 +1335,475 @@ movimientos_template = """
 </body>
 </html>
 """
+transfer_template = """
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Transferencias - Banco Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+    />
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #dcebff 0%, #f1f7ff 40%, #e0f0ff 100%);
+            display: flex;
+            justify-content: center;
+            padding: 24px 12px;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            color: #16396b;
+        }
+
+        .top-bar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .top-bar-title i {
+            font-size: 26px;
+            color: #355adf;
+        }
+
+        .user-info {
+            font-size: 14px;
+        }
+
+        .user-info strong {
+            font-weight: 700;
+        }
+
+        .user-info a {
+            color: #c0392b;
+            text-decoration: none;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        .user-info a:hover {
+            text-decoration: underline;
+        }
+
+        .glass-card {
+            position: relative;
+            padding: 24px 22px 20px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            box-shadow: 0 16px 42px rgba(15, 60, 120, 0.18);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 14px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #16396b;
+        }
+
+        .card-title i { color: #355adf; }
+
+        .subtext {
+            font-size: 13px;
+            color: #4f5f80;
+            margin-bottom: 16px;
+        }
+
+        form.transfer-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 12px;
+        }
+
+        @media (min-width: 720px) {
+            form.transfer-form {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .full-width {
+                grid-column: 1 / -1;
+            }
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #304468;
+            margin-bottom: 4px;
+        }
+
+        select,
+        input[type="number"],
+        input[type="text"] {
+            border-radius: 999px;
+            border: 1px solid rgba(151, 177, 221, 0.8);
+            padding: 9px 14px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            outline: none;
+            transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        select:focus,
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            border-color: #4c8dff;
+            box-shadow: 0 0 0 3px rgba(76, 141, 255, 0.25);
+            background: #ffffff;
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: #5b6f90;
+            margin-top: 3px;
+        }
+
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            position: relative;
+            border: none;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4c8dff 0%, #355adf 100%);
+            color: #ffffff;
+            box-shadow: 0 8px 18px rgba(53, 90, 223, 0.35);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: #355adf;
+            border: 1px solid rgba(151, 177, 221, 0.9);
+        }
+
+        .btn-primary:hover,
+        .btn-secondary:hover {
+            filter: brightness(1.05);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active,
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            cursor: default;
+            filter: grayscale(0.1) brightness(0.95);
+            box-shadow: 0 4px 12px rgba(53, 90, 223, 0.25);
+        }
+
+        .btn-content,
+        .btn-loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-loader {
+            position: absolute;
+            inset: 0;
+            display: none;
+        }
+
+        #transferBtn.loading .btn-content { visibility: hidden; }
+        #transferBtn.loading .btn-loader { display: flex; }
+
+        .status-message {
+            margin-top: 14px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-message.error {
+            color: #d0342c;
+        }
+
+        .status-message.success {
+            color: #1e8449;
+        }
+
+        .status-message i {
+            font-size: 16px;
+        }
+
+        .balances-card {
+            margin-top: 18px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(198, 210, 240, 0.9);
+            font-size: 13px;
+        }
+
+        .balances-title {
+            font-weight: 700;
+            color: #16396b;
+            margin-bottom: 6px;
+        }
+
+        .balances-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 6px;
+        }
+
+        .balance-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: 12px;
+            color: #4f5f80;
+        }
+
+        .balance-item strong {
+            color: #29446e;
+        }
+
+        .back-link {
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .back-link a {
+            color: #355adf;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="top-bar">
+            <div class="top-bar-title">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                <span>Transferencias entre cuentas</span>
+            </div>
+            <div class="user-info">
+                Usuario: <strong>{{ username }}</strong> |
+                <a href="{{ url_for('logout') }}">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                </a>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <h2 class="card-title">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>Realizar transferencia</span>
+            </h2>
+            <p class="subtext">
+                Mueve fondos entre las cuentas del cliente. Verifica los datos antes de confirmar la operación.
+            </p>
+
+            <form id="transferForm" method="post" class="transfer-form">
+                <div class="field-group full-width">
+                    <label for="customer_id">ID del cliente</label>
+                    <input
+                        type="number"
+                        id="customer_id"
+                        name="customer_id"
+                        min="1"
+                        value="{{ customer_id or '' }}"
+                        required
+                    />
+                    <div class="helper-text">
+                        Cliente actual: <strong>#{{ customer_id or "N/A" }}</strong>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label for="origin_account">Cuenta origen</label>
+                    <select id="origin_account" name="origin_account" required>
+                        <option value="" disabled {% if not origin_account %}selected{% endif %}>Selecciona una cuenta</option>
+                        {% for acc in accounts %}
+                            <option value="{{ acc.id }}"
+                                {% if origin_account and origin_account == acc.id %}selected{% endif %}>
+                                #{{ acc.id }} · {{ acc.type | capitalize }} ·
+                                $ {{ '%.2f' | format(acc.balance) }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="helper-text">
+                        Solo se mostrarán las cuentas asociadas al cliente.
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label for="destination_account">Cuenta destino</label>
+                    <input
+                        type="number"
+                        id="destination_account"
+                        name="destination_account"
+                        min="1"
+                        value="{{ destination_account or '' }}"
+                        required
+                    />
+                    <div class="helper-text">
+                        Ingresa el ID de la cuenta destino (puede ser del mismo cliente u otro).
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label for="amount">Monto a transferir</label>
+                    <input
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        id="amount"
+                        name="amount"
+                        value="{{ amount or '' }}"
+                        required
+                    />
+                    <div class="helper-text">
+                        El saldo de la cuenta origen debe ser suficiente para cubrir el monto.
+                    </div>
+                </div>
+
+                <div class="field-group full-width">
+                    <div class="btn-row">
+                        <button type="submit" class="btn-primary" id="transferBtn">
+                            <span class="btn-content">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>Confirmar transferencia</span>
+                            </span>
+                            <span class="btn-loader">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                <span>Procesando...</span>
+                            </span>
+                        </button>
+
+                        <a class="btn-secondary" href="{{ url_for('consultar_saldos') }}">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Volver a saldos
+                        </a>
+
+                        <a class="btn-secondary" href="{{ url_for('historial_movimientos') }}?customer_id={{ customer_id or '' }}">
+                            <i class="fa-solid fa-list-ul"></i>
+                            Ver movimientos
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            {% if error %}
+                <div class="status-message error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>{{ error }}</span>
+                </div>
+            {% endif %}
+
+            {% if message %}
+                <div class="status-message success">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endif %}
+
+            <div class="balances-card">
+                <div class="balances-title">
+                    <i class="fa-solid fa-wallet"></i>
+                    Saldos actuales de las cuentas
+                </div>
+                {% if accounts and accounts|length > 0 %}
+                    <div class="balances-list">
+                        {% for acc in accounts %}
+                            <div class="balance-item">
+                                <strong>Cuenta #{{ acc.id }} · {{ acc.type | capitalize }}</strong>
+                                <span>Saldo: $ {{ '%.2f' | format(acc.balance) }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="helper-text">
+                        No se encontraron cuentas asociadas al cliente.
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="back-link">
+                <a href="{{ url_for('consultar_saldos') }}">
+                    <i class="fa-solid fa-chevron-left"></i>
+                    Ir a la consulta de saldos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const form = document.getElementById("transferForm");
+            const btn = document.getElementById("transferBtn");
+
+            if (form && btn) {
+                form.addEventListener("submit", function () {
+                    btn.classList.add("loading");
+                    btn.disabled = true;
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
+"""
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -1481,7 +1949,89 @@ def historial_movimientos():
         date_to=date_to,
         url_for=url_for,
     )
+@app.route("/transferencias", methods=["GET", "POST"])
+def transferencias():
+    if "token" not in session:
+        return redirect(url_for("login"))
 
+    username = session.get("username")
+    customer_id = request.values.get("customer_id") or ""  # query o form
+    error = None
+    message = None
+    origin_account = None
+    destination_account = None
+    amount = None
+    accounts = []
+
+    # 1. Si hay customer_id, pedimos sus cuentas al backend
+    if customer_id:
+        try:
+            resp = requests.get(
+                f"{FASTAPI_BASE_URL}/customers/{customer_id}/accounts",
+                headers={"Authorization": f"Bearer {session['token']}"},
+                timeout=5,
+            )
+            if resp.status_code == 200:
+                accounts = resp.json()
+            else:
+                error = f"No se pudieron obtener las cuentas (status {resp.status_code})."
+        except Exception as e:
+            error = f"No se pudo conectar con el servicio de cuentas: {e}"
+
+    # 2. Procesar transferencia
+    if request.method == "POST":
+        customer_id = request.form.get("customer_id")
+        origin_account = request.form.get("origin_account")
+        destination_account = request.form.get("destination_account")
+        amount = request.form.get("amount")
+
+        if not customer_id or not origin_account or not destination_account or not amount:
+            error = "Todos los campos son obligatorios."
+        else:
+            try:
+                data = {
+                    "origin_account": int(origin_account),
+                    "destination_account": int(destination_account),
+                    "amount": float(amount),
+                }
+                resp = requests.post(
+                    f"{FASTAPI_BASE_URL}/customers/{customer_id}/transfer",
+                    json=data,
+                    headers={"Authorization": f"Bearer {session['token']}"},
+                    timeout=5,
+                )
+                if resp.status_code == 200:
+                    message = "Transferencia realizada con éxito."
+                    error = None
+                    # refrescar cuentas con saldos actualizados
+                    acc_resp = requests.get(
+                        f"{FASTAPI_BASE_URL}/customers/{customer_id}/accounts",
+                        headers={"Authorization": f"Bearer {session['token']}"},
+                        timeout=5,
+                    )
+                    if acc_resp.status_code == 200:
+                        accounts = acc_resp.json()
+                else:
+                    try:
+                        detail = resp.json().get("detail")
+                    except Exception:
+                        detail = resp.text
+                    error = f"Error realizando la transferencia: {detail}"
+            except Exception as e:
+                error = f"No se pudo conectar con el servicio de transferencias: {e}"
+
+    return render_template_string(
+        transfer_template,
+        username=username,
+        customer_id=customer_id,
+        accounts=accounts,
+        origin_account=int(origin_account) if origin_account else None,
+        destination_account=destination_account,
+        amount=amount,
+        error=error,
+        message=message,
+        url_for=url_for,
+    )
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
