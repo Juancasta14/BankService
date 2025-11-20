@@ -768,6 +768,27 @@ consulta_template = """
                 {% endif %}
             </div>
         </div>
+        <div style="margin-top: 14px;">
+    <a
+        href="{{ url_for('historial_movimientos') }}?customer_id={{ summary.customer_id }}"
+        style="
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            padding:8px 14px;
+            border-radius:999px;
+            font-size:13px;
+            font-weight:600;
+            text-decoration:none;
+            background:rgba(255,255,255,0.9);
+            color:#355adf;
+            border:1px solid rgba(151,177,221,0.9);
+        "
+    >
+        <i class="fa-solid fa-receipt"></i>
+        Ver historial de movimientos
+    </a>
+</div>
     </div>
 
     <script>
@@ -786,6 +807,535 @@ consulta_template = """
 </body>
 </html>
 """
+
+movimientos_template = """
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Historial de Movimientos - Banco Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+    />
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #dcebff 0%, #f1f7ff 40%, #e0f0ff 100%);
+            display: flex;
+            justify-content: center;
+            padding: 24px 12px;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 960px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            color: #16396b;
+        }
+
+        .top-bar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .top-bar-title i {
+            font-size: 26px;
+            color: #355adf;
+        }
+
+        .user-info {
+            font-size: 14px;
+        }
+
+        .user-info strong {
+            font-weight: 700;
+        }
+
+        .user-info a {
+            color: #c0392b;
+            text-decoration: none;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        .user-info a:hover {
+            text-decoration: underline;
+        }
+
+        .glass-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+            gap: 18px;
+        }
+
+        @media (max-width: 800px) {
+            .glass-layout { grid-template-columns: 1fr; }
+        }
+
+        .glass-card {
+            position: relative;
+            padding: 22px 20px 18px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            box-shadow: 0 16px 42px rgba(15, 60, 120, 0.18);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 12px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #16396b;
+        }
+
+        .card-title i { color: #355adf; }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #304468;
+            margin-bottom: 4px;
+        }
+
+        input[type="number"],
+        input[type="date"],
+        select {
+            border-radius: 999px;
+            border: 1px solid rgba(151, 177, 221, 0.8);
+            padding: 8px 14px;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.9);
+            outline: none;
+            transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #4c8dff;
+            box-shadow: 0 0 0 3px rgba(76, 141, 255, 0.25);
+            background: #ffffff;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .filter-row { grid-template-columns: 1fr; }
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            position: relative;
+            border: none;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4c8dff 0%, #355adf 100%);
+            color: #ffffff;
+            box-shadow: 0 8px 18px rgba(53, 90, 223, 0.35);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.9);
+            color: #355adf;
+            border: 1px solid rgba(151, 177, 221, 0.9);
+        }
+
+        .btn-primary:hover,
+        .btn-secondary:hover {
+            filter: brightness(1.05);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active,
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            cursor: default;
+            filter: grayscale(0.1) brightness(0.95);
+            box-shadow: 0 4px 12px rgba(53, 90, 223, 0.25);
+        }
+
+        .btn-content,
+        .btn-loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-loader {
+            position: absolute;
+            inset: 0;
+            display: none;
+        }
+
+        #movBtn.loading .btn-content { visibility: hidden; }
+        #movBtn.loading .btn-loader { display: flex; }
+
+        .helper-text {
+            font-size: 12px;
+            color: #5b6f90;
+        }
+
+        .error-message {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #d0342c;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mov-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+
+        .mov-header-main {
+            font-size: 18px;
+            font-weight: 700;
+            color: #16396b;
+        }
+
+        .mov-header-sub {
+            font-size: 13px;
+            color: #4f5f80;
+        }
+
+        .mov-header-sub span {
+            font-weight: 600;
+        }
+
+        .movements-list-wrapper {
+            margin-top: 8px;
+            max-height: 420px;
+            overflow: auto;
+            padding-right: 6px;
+        }
+
+        .movement-row {
+            display: grid;
+            grid-template-columns: 90px 1.4fr 0.9fr 0.9fr;
+            gap: 10px;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(198, 210, 240, 0.9);
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        @media (max-width: 700px) {
+            .movement-row {
+                grid-template-columns: 0.8fr 1.6fr;
+                grid-template-rows: auto auto;
+                row-gap: 4px;
+            }
+            .movement-amount,
+            .movement-account {
+                justify-self: flex-start;
+            }
+        }
+
+        .movement-date {
+            color: #4f5f80;
+            font-weight: 600;
+        }
+
+        .movement-desc {
+            color: #304468;
+        }
+
+        .movement-amount {
+            font-weight: 700;
+        }
+
+        .movement-amount.credit {
+            color: #0e7a3b;
+        }
+
+        .movement-amount.debit {
+            color: #c0392b;
+        }
+
+        .movement-account {
+            font-size: 11px;
+            color: #6c7a96;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+        }
+
+        .pill.credit {
+            background: rgba(39, 174, 96, 0.1);
+            color: #27ae60;
+        }
+
+        .pill.debit {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+
+        .no-data {
+            font-size: 13px;
+            color: #6c7a96;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-link {
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .back-link a {
+            color: #355adf;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="top-bar">
+            <div class="top-bar-title">
+                <i class="fa-solid fa-receipt"></i>
+                <span>Historial de movimientos</span>
+            </div>
+            <div class="user-info">
+                Usuario: <strong>{{ username }}</strong> |
+                <a href="{{ url_for('logout') }}">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                </a>
+            </div>
+        </div>
+
+        <div class="glass-layout">
+            <!-- Filtros -->
+            <div class="glass-card">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-filter"></i>
+                    <span>Filtros</span>
+                </h2>
+
+                <form id="movForm" method="post">
+                    <div class="field-group">
+                        <label for="customer_id">ID del cliente</label>
+                        <input
+                            type="number"
+                            id="customer_id"
+                            name="customer_id"
+                            min="1"
+                            value="{{ customer_id or '' }}"
+                            required
+                        />
+                        <div class="helper-text">
+                            Cliente actual: <strong>#{{ customer_id or "N/A" }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="account_filter">Cuenta</label>
+                        <select id="account_filter" name="account_filter">
+                            <option value="">Todas las cuentas</option>
+                            <option value="ahorros" {% if account_filter == "ahorros" %}selected{% endif %}>
+                                Ahorros
+                            </option>
+                            <option value="corriente" {% if account_filter == "corriente" %}selected{% endif %}>
+                                Corriente
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="filter-row">
+                        <div class="field-group">
+                            <label for="date_from">Desde</label>
+                            <input type="date" id="date_from" name="date_from" value="{{ date_from or '' }}" />
+                        </div>
+                        <div class="field-group">
+                            <label for="date_to">Hasta</label>
+                            <input type="date" id="date_to" name="date_to" value="{{ date_to or '' }}" />
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="submit" class="btn-primary" id="movBtn">
+                            <span class="btn-content">
+                                <i class="fa-solid fa-rotate-right"></i>
+                                <span>Actualizar</span>
+                            </span>
+                            <span class="btn-loader">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                <span>Cargando...</span>
+                            </span>
+                        </button>
+
+                        <a class="btn-secondary" href="{{ url_for('consultar_saldos') }}">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Volver a saldos
+                        </a>
+                    </div>
+
+                    {% if error %}
+                        <div class="error-message">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <span>{{ error }}</span>
+                        </div>
+                    {% endif %}
+                </form>
+
+                <div class="back-link">
+                    <a href="{{ url_for('consultar_saldos') }}">
+                        <i class="fa-solid fa-chevron-left"></i>
+                        Ir a la consulta de saldos
+                    </a>
+                </div>
+            </div>
+
+            <!-- Lista de movimientos -->
+            <div class="glass-card">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-list-ul"></i>
+                    <span>Movimientos</span>
+                </h2>
+
+                <div class="mov-header">
+                    <div>
+                        <div class="mov-header-main">
+                            Cliente #{{ customer_id or "N/A" }}
+                        </div>
+                        <div class="mov-header-sub">
+                            {% if account_filter %}
+                                Mostrando movimientos de <span>{{ account_filter }}</span>
+                            {% else %}
+                                Mostrando movimientos de todas las cuentas
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if movements and movements|length > 0 %}
+                    <div class="movements-list-wrapper">
+                        {% for mov in movements %}
+                            <div class="movement-row">
+                                <div class="movement-date">
+                                    {{ mov.date }}
+                                </div>
+                                <div class="movement-desc">
+                                    {{ mov.description }}
+                                </div>
+                                <div class="movement-amount {% if mov.type == 'credito' %}credit{% else %}debit{% endif %}">
+                                    {% if mov.type == 'credito' %}+{% else %}-{% endif %}
+                                    $ {{ '%.2f' | format(mov.amount) }}
+                                    <div class="pill {% if mov.type == 'credito' %}credit{% else %}debit{% endif %}">
+                                        {% if mov.type == 'credito' %}
+                                            <i class="fa-solid fa-arrow-trend-up"></i> Crédito
+                                        {% else %}
+                                            <i class="fa-solid fa-arrow-trend-down"></i> Débito
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="movement-account">
+                                    <i class="fa-solid fa-credit-card"></i>
+                                    {{ mov.account_type | default("Cuenta") | capitalize }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="no-data">
+                        <i class="fa-regular fa-circle-question"></i>
+                        No hay movimientos para los filtros seleccionados.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const form = document.getElementById("movForm");
+            const btn = document.getElementById("movBtn");
+
+            if (form && btn) {
+                form.addEventListener("submit", function () {
+                    btn.classList.add("loading");
+                    btn.disabled = true;
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
+"""
+
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -865,6 +1415,71 @@ def consultar_saldos():
         error=error,
     )
 
+@app.route("/movimientos", methods=["GET", "POST"])
+def historial_movimientos():
+    if "token" not in session:
+        return redirect(url_for("login"))
+
+    username = session.get("username")
+    error = None
+    movements = []
+    account_filter = None
+    date_from = None
+    date_to = None
+
+    # ID de cliente puede llegar por querystring (desde el botón de saldos)
+    customer_id = request.args.get("customer_id") or request.form.get("customer_id")
+
+    if request.method == "POST":
+        customer_id = request.form.get("customer_id")
+        account_filter = request.form.get("account_filter") or None
+        date_from = request.form.get("date_from") or None
+        date_to = request.form.get("date_to") or None
+
+    if not customer_id:
+        error = "Debes indicar un ID de cliente."
+    else:
+        try:
+            # Construir parámetros de consulta (ajusta a tu API real)
+            params = {}
+            if account_filter:
+                params["account_type"] = account_filter
+            if date_from:
+                params["date_from"] = date_from
+            if date_to:
+                params["date_to"] = date_to
+
+            resp = requests.get(
+                f"{FASTAPI_BASE_URL}/customers/{customer_id}/movements",
+                headers={"Authorization": f"Bearer {session['token']}"},
+                params=params,
+                timeout=5,
+            )
+
+            if resp.status_code == 200:
+                movements = resp.json()
+            elif resp.status_code == 404:
+                error = "No se encontraron movimientos para ese cliente."
+            elif resp.status_code == 401:
+                session.clear()
+                return redirect(url_for("login"))
+            else:
+                error = f"Error consultando el servicio (status {resp.status_code})."
+
+        except Exception as e:
+            error = f"No se pudo conectar con el servicio: {e}"
+
+    return render_template_string(
+        movimientos_template,
+        username=username,
+        customer_id=customer_id,
+        movements=movements,
+        error=error,
+        account_filter=account_filter,
+        date_from=date_from,
+        date_to=date_to,
+        url_for=url_for,
+    )
 
 
 if __name__ == "__main__":
