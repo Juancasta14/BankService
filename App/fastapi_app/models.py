@@ -43,6 +43,7 @@ class MovementDB(Base):
     __tablename__ = "movements"
 
     id = Column(Integer, primary_key=True, index=True)
+    account_id = Column(Integer, nullable=False)
     customer_id = Column(Integer, index=True, nullable=False)
     account_type = Column(String, nullable=True)  # "ahorros", "corriente", etc.
     date = Column(String, nullable=False)  # también podría ser Date, pero string ISO es suficiente
