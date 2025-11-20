@@ -642,48 +642,78 @@ consulta_template = """
             align-items: center;
             gap: 6px;
         }
-/* Tooltip base */
+/* Botón Transferir: pill azul, mismo estilo que Consultar */
 .btn-transfer {
     position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #4c8dff 0%, #355adf 100%);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 22px rgba(53, 90, 223, 0.35);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
 }
 
-/* Estilo del tooltip */
+.btn-transfer i {
+    font-size: 1.1rem;
+}
+
+.btn-transfer:hover {
+    filter: brightness(1.05);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 26px rgba(53, 90, 223, 0.45);
+}
+
+.btn-transfer:active {
+    transform: translateY(0);
+    box-shadow: 0 8px 18px rgba(53, 90, 223, 0.35);
+}
+
+/* Tooltip glass */
 .btn-transfer::after {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: 110%;
+    bottom: 115%;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(8px);
-    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 7px 12px;
     border-radius: 10px;
     white-space: nowrap;
     color: #1b2a4a;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 500;
-    box-shadow: 0 4px 12px rgba(76, 141, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 20px rgba(15, 60, 120, 0.25);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-/* Flechita */
+/* Flechita del tooltip */
 .btn-transfer::before {
     content: "";
     position: absolute;
-    bottom: 100%;
+    bottom: 104%;
     left: 50%;
     transform: translateX(-50%);
     border-width: 6px;
     border-style: solid;
-    border-color: rgba(255, 255, 255, 0.25) transparent transparent transparent;
+    border-color: rgba(255, 255, 255, 0.22) transparent transparent transparent;
     opacity: 0;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.2s ease;
 }
 
-/* Mostrar tooltip */
+/* Mostrar tooltip al hover */
 .btn-transfer:hover::after,
 .btn-transfer:hover::before {
     opacity: 1;
@@ -745,12 +775,17 @@ consulta_template = """
                 </form>
                 <div class="btn-container">
 <div class="btn-container">
-    <a href="{{ url_for('transferencias') }}?customer_id={{ customer_id or '' }}"
-       class="btn-transfer"
-       data-tooltip="Realizar transferencia entre cuentas">
-        <i class="fa-solid fa-arrow-right-arrow-left"></i>
-        <span>Transferir</span>
-    </a>
+    <button
+        type="button"
+        id="transferBtn"
+        class="btn-transfer"
+        data-tooltip="Realizar transferencia entre cuentas"
+        onclick="window.location.href='{{ url_for('transferencias') }}?customer_id={{ customer_id or (summary.customer_id if summary else '') }}'">
+        <span class="btn-content">
+            <i class="fa-solid fa-arrow-right-arrow-left"></i>
+            <span>Transferir</span>
+        </span>
+    </button>
 </div>
 </div>                       
                 {% if error %}
