@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Entornos virtuales
+venv/
+.env
+
+# Docker
+*.log
+*.pid
+*.sock
+*.db
+db_data/
+pgdata/
+*/__pycache__/
+
+# FastAPI + Flask
+*.sqlite3
+
+# Docker compose volumes
+volumes/

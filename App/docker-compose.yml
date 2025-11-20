@@ -35,7 +35,7 @@ services:
     container_name: banco_flask
     restart: unless-stopped
     environment:
-      FASTAPI_BASE_URL: http://fastapi:8000
+      FASTAPI_BASE_URL: http://banco_fastapi:8000
     depends_on:
       - fastapi
     ports:

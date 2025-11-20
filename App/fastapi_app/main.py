@@ -3,15 +3,15 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from database import get_db, Base, engine
+from database import get_db, engine
 from models import (
+    Base,
     AccountDB,
     WalletDB,
     UserDB,
     Account,
     Wallet,
     CustomerSummary,
-    User,
     get_accounts_by_customer,
     get_wallet_by_customer,
     get_user_by_username,

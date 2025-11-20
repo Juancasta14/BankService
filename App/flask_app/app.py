@@ -2,12 +2,12 @@ from flask import Flask, render_template_string, request, redirect, url_for, ses
 import requests
 import os
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 # Clave para la sesión de Flask (cámbiala en producción)
-app.secret_key = "CAMBIA_ESTO_POR_ALGO_SEGURO"
+app.secret_key = "Juan_Cristian_Jorge"
 
-FASTAPI_BASE_URL = os.getenv("FASTAPI_BASE_URL", "http://fastapi:8000")
+FASTAPI_BASE_URL = os.getenv("FASTAPI_BASE_URL", "http://banco_fastapi:8000")
 
 LOGIN_TEMPLATE = """
 <!doctype html>
@@ -159,5 +159,5 @@ def index():
     )
 
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
