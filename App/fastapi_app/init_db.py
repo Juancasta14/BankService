@@ -49,6 +49,7 @@ def init():
             movimientos = [
                 # Cliente 100
                 MovementDB(
+                    account_id=1,
                     customer_id=100,
                     account_type="ahorros",
                     date="2025-11-15",
@@ -57,6 +58,7 @@ def init():
                     type="credito",
                 ),
                 MovementDB(
+                    account_id=1,
                     customer_id=100,
                     account_type="ahorros",
                     date="2025-11-16",
@@ -65,6 +67,7 @@ def init():
                     type="debito",
                 ),
                 MovementDB(
+                    account_id=2,
                     customer_id=100,
                     account_type="corriente",
                     date="2025-11-17",
@@ -73,6 +76,7 @@ def init():
                     type="debito",
                 ),
                 MovementDB(
+                    account_id=2,
                     customer_id=100,
                     account_type="corriente",
                     date="2025-11-18",
@@ -82,6 +86,7 @@ def init():
                 ),
                 # Cliente 101
                 MovementDB(
+                    account_id=3,
                     customer_id=101,
                     account_type="ahorros",
                     date="2025-11-14",
@@ -90,6 +95,7 @@ def init():
                     type="credito",
                 ),
                 MovementDB(
+                    account_id=3,
                     customer_id=101,
                     account_type="ahorros",
                     date="2025-11-19",
