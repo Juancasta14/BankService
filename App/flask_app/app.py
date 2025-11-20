@@ -1,11 +1,39 @@
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template_string, request, redirect, url_for, session
 import requests
 import os
 
-app = Flask(__name__)
+app = Flask(_name_)
 
-# URL base del servicio FastAPI (inyectada por docker-compose o por defecto localhost)
+# Clave para la sesión de Flask (cámbiala en producción)
+app.secret_key = "CAMBIA_ESTO_POR_ALGO_SEGURO"
+
 FASTAPI_BASE_URL = os.getenv("FASTAPI_BASE_URL", "http://fastapi:8000")
+
+LOGIN_TEMPLATE = """
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Login - Banco</title>
+</head>
+<body>
+    <h1>Login</h1>
+
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="post">
+        <label>Usuario:</label>
+        <input type="text" name="username" required><br><br>
+        <label>Contraseña:</label>
+        <input type="password" name="password" required><br><br>
+        <button type="submit">Entrar</button>
+    </form>
+</body>
+</html>
+"""
+
 
 HTML_TEMPLATE = """
 <!doctype html>
@@ -16,6 +44,10 @@ HTML_TEMPLATE = """
 </head>
 <body>
     <h1>Consulta de Saldos del Cliente</h1>
+
+    <p>Usuario: <strong>{{ username }}</strong> |
+       <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+    </p>
 
     <form method="get">
         <label for="customer_id">ID del cliente:</label>
@@ -53,22 +85,66 @@ HTML_TEMPLATE = """
 """
 
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        try:
+            resp = requests.post(
+                f"{FASTAPI_BASE_URL}/auth/login",
+                data={"username": username, "password": password},
+                timeout=5,
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                session["token"] = data["access_token"]
+                session["username"] = data["username"]
+                return redirect(url_for("index"))
+            else:
+                try:
+                    error = resp.json().get("detail", "Credenciales inválidas")
+                except Exception:
+                    error = "Error en el servicio de autenticación"
+        except Exception as e:
+            error = f"No se pudo conectar con el servicio: {e}"
+
+    return render_template_string(LOGIN_TEMPLATE, error=error)
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
 @app.route("/", methods=["GET"])
 def index():
+    # Si no hay token, mandar al login
+    token = session.get("token")
+    username = session.get("username")
+    if not token:
+        return redirect(url_for("login"))
+
     customer_id = request.args.get("customer_id", type=int)
     error = None
     summary = None
 
-    # Solo llamamos a FastAPI si el usuario puso un ID
     if customer_id is not None:
+        headers = {"Authorization": f"Bearer {token}"}
         try:
-            resp = requests.get(f"{FASTAPI_BASE_URL}/customers/{customer_id}/summary", timeout=5)
+            resp = requests.get(
+                f"{FASTAPI_BASE_URL}/customers/{customer_id}/summary",
+                headers=headers,
+                timeout=5,
+            )
             if resp.status_code == 200:
                 summary = resp.json()
             else:
-                # Tratamos de leer el detalle si viene como JSON, si no, mensaje genérico
                 try:
-                    error = resp.json().get("detail", "Error consultando el servicio")
+                    error = resp.json().get("detail", f"Error consultando el servicio (status {resp.status_code})")
                 except Exception:
                     error = f"Error consultando el servicio (status {resp.status_code})"
         except Exception as e:
@@ -79,9 +155,9 @@ def index():
         customer_id=customer_id,
         summary=summary,
         error=error,
+        username=username or "desconocido",
     )
 
 
-if __name__ == "__main__":
-    # ¡IMPORTANTE! host=0.0.0.0 para que responda fuera del contenedor
+if _name_ == "_main_":
     app.run(host="0.0.0.0", port=5000)
