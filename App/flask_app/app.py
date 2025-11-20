@@ -698,8 +698,8 @@ consulta_template = """
                     </div>
                 </form>
                 <div class="btn-container">
-                        <button type="submit" id="transferBtn">
-                            <span class="btn-content" href="{{ url_for('transferencias') }}">
+                        <button type="submit" id="transferBtn" href="{{ url_for('transferencias') }}">
+                            <span class="btn-content">
                                 <i class="fa-solid fa-file-circle-search"></i>
                                 <span>Transferir</span>
                             </span>
