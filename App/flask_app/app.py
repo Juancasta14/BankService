@@ -642,6 +642,36 @@ consulta_template = """
             align-items: center;
             gap: 6px;
         }
+        .btn-transfer {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 26px;
+    background: linear-gradient(180deg, #4c8dff, #3b76e5);
+    color: white;
+    border-radius: 12px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(76, 141, 255, 0.3);
+    transition: all 0.2s ease;
+}
+
+.btn-transfer i {
+    font-size: 1.2rem;
+}
+
+.btn-transfer:hover {
+    background: linear-gradient(180deg, #5b9aff, #447fe9);
+    box-shadow: 0 6px 16px rgba(76, 141, 255, 0.45);
+    transform: translateY(-2px);
+}
+
+.btn-transfer:active {
+    transform: scale(0.97);
+}
     </style>
 </head>
 <body>
@@ -698,16 +728,11 @@ consulta_template = """
                     </div>
                 </form>
                 <div class="btn-container">
-    <button
-        type="button"
-        id="transferBtn"
-        onclick="window.location.href='{{ url_for('transferencias') }}?customer_id={{ customer_id or (summary.customer_id if summary else '') }}'"
-    >
-        <span class="btn-content">
-            <i class="fa-solid fa-arrow-right-arrow-left"></i>
-            <span>Transferir</span>
-        </span>
-    </button>
+<div class="btn-container">
+    <a href="{{ url_for('transferencias') }}?customer_id={{ customer_id or '' }}" class="btn-transfer">
+        <i class="fa-solid fa-arrow-right-arrow-left"></i>
+        <span>Transferir</span>
+    </a>
 </div>
                         
                 {% if error %}
