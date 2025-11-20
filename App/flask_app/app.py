@@ -642,41 +642,41 @@ consulta_template = """
             align-items: center;
             gap: 6px;
         }
-/* Botón Transferir: pill azul, mismo estilo que Consultar */
+/* Botón Transferir — versión compacta */
 .btn-transfer {
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 12px 28px;
+    gap: 6px;
+    padding: 10px 18px;             /* MUCHÍSIMO MÁS COMPACTO */
     border-radius: 999px;
     border: none;
     background: linear-gradient(135deg, #4c8dff 0%, #355adf 100%);
-    color: #ffffff;
-    font-size: 1rem;
+    color: white;
+    font-size: 0.9rem;              /* Reducido */
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 10px 22px rgba(53, 90, 223, 0.35);
+    box-shadow: 0 6px 14px rgba(53, 90, 223, 0.25);  /* Sombra más pequeña */
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
 }
 
 .btn-transfer i {
-    font-size: 1.1rem;
+    font-size: 1rem;                /* Icono más pequeño */
 }
 
 .btn-transfer:hover {
-    filter: brightness(1.05);
+    filter: brightness(1.07);
     transform: translateY(-2px);
-    box-shadow: 0 14px 26px rgba(53, 90, 223, 0.45);
+    box-shadow: 0 8px 18px rgba(53, 90, 223, 0.35);
 }
 
 .btn-transfer:active {
     transform: translateY(0);
-    box-shadow: 0 8px 18px rgba(53, 90, 223, 0.35);
+    box-shadow: 0 5px 12px rgba(53, 90, 223, 0.25);
 }
 
-/* Tooltip glass */
+/* Tooltip */
 .btn-transfer::after {
     content: attr(data-tooltip);
     position: absolute;
@@ -685,35 +685,32 @@ consulta_template = """
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.22);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 7px 12px;
-    border-radius: 10px;
+    padding: 6px 10px;
+    border-radius: 8px;
     white-space: nowrap;
     color: #1b2a4a;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 500;
     border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 8px 20px rgba(15, 60, 120, 0.25);
+    box-shadow: 0 6px 15px rgba(15, 60, 120, 0.2);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-/* Flechita del tooltip */
 .btn-transfer::before {
     content: "";
     position: absolute;
-    bottom: 104%;
+    bottom: 108%;
     left: 50%;
     transform: translateX(-50%);
-    border-width: 6px;
+    border-width: 5px;
     border-style: solid;
     border-color: rgba(255, 255, 255, 0.22) transparent transparent transparent;
     opacity: 0;
     transition: opacity 0.2s ease;
 }
 
-/* Mostrar tooltip al hover */
 .btn-transfer:hover::after,
 .btn-transfer:hover::before {
     opacity: 1;
