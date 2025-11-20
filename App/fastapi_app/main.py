@@ -12,6 +12,7 @@ from models import (
     AccountDB,
     WalletDB,
     UserDB,
+    MovementDB,
     Account,
     Wallet,
     Movement,
