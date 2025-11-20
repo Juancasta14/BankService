@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
+
 from database import get_db, engine
 from models import (
     Base,
@@ -11,10 +12,12 @@ from models import (
     UserDB,
     Account,
     Wallet,
+    Movement,
     CustomerSummary,
     get_accounts_by_customer,
     get_wallet_by_customer,
     get_user_by_username,
+    get_movements_by_customer,
 )
 from security import verify_password, create_access_token
 
@@ -157,6 +160,26 @@ def get_customer_summary(
         total_balance=total,
     )
 
+@app.get(
+    "/customers/{customer_id}/movements",
+    response_model=List[Movement],
+)
+def get_customer_movements(
+    customer_id: int,
+    account_type: Optional[str] = Query(None),
+    date_from: Optional[str] = Query(None),
+    date_to: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user),
+):
+    movimientos_db = get_movements_by_customer(
+        db=db,
+        customer_id=customer_id,
+        account_type=account_type,
+        date_from=date_from,
+        date_to=date_to,
+    )
+    return movimientos_db
 
 @app.get("/")
 def root():
