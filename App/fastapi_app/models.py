@@ -5,8 +5,8 @@ from typing import List, Optional
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import declarative_base, Session
 from pydantic import BaseModel
+from datetime import date
 
-# AQUÍ definimos el ÚNICO Base para los modelos de BD
 Base = declarative_base()
 
 
@@ -38,6 +38,16 @@ class UserDB(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
+class MovementDB(Base):
+    __tablename__ = "movements"
+
+    id = Column(Integer, primary_key=True, index=True)
+    customer_id = Column(Integer, index=True, nullable=False)
+    account_type = Column(String, nullable=True)  # "ahorros", "corriente", etc.
+    date = Column(String, nullable=False)  # también podría ser Date, pero string ISO es suficiente
+    description = Column(String, nullable=False)
+    amount = Column(Float, nullable=False)
+    type = Column(String, nullable=False)  # "credito" o "debito"
 
 # =========================
 #   MODELOS PYDANTIC
@@ -50,7 +60,7 @@ class Account(BaseModel):
     balance: float
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class Wallet(BaseModel):
@@ -81,6 +91,16 @@ class UserCreate(BaseModel):
     username: str
     password: str
 
+class Movement(BaseModel):
+    date: str
+    description: str
+    amount: float
+    type: str          # "credito" / "debito"
+    account_type: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
 
 # =========================
 #   HELPERS DE CONSULTA
@@ -96,3 +116,23 @@ def get_wallet_by_customer(db: Session, customer_id: int) -> Optional[WalletDB]:
 
 def get_user_by_username(db: Session, username: str) -> Optional[UserDB]:
     return db.query(UserDB).filter(UserDB.username == username).first()
+    
+def get_movements_by_customer(
+    db: Session,
+    customer_id: int,
+    account_type: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+) -> List[MovementDB]:
+    query = db.query(MovementDB).filter(MovementDB.customer_id == customer_id)
+
+    if account_type:
+        query = query.filter(MovementDB.account_type == account_type)
+
+    # asumiendo fechas en formato "YYYY-MM-DD" guardadas como texto
+    if date_from:
+        query = query.filter(MovementDB.date >= date_from)
+    if date_to:
+        query = query.filter(MovementDB.date <= date_to)
+
+    return query.order_by(MovementDB.date.desc(), MovementDB.id.desc()).all()
