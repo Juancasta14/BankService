@@ -1252,7 +1252,7 @@ movimientos_template = """
                 </form>
 
                 <div class="back-link">
-                    <a href="{{ url_for('consultar_saldos') }}">
+                    <a href="{{ url_for('transferencias') }}">
                         <i class="fa-solid fa-chevron-left"></i>
                         Ir a la consulta de saldos
                     </a>
@@ -1782,7 +1782,7 @@ transfer_template = """
             <div class="back-link">
                 <a href="{{ url_for('consultar_saldos') }}">
                     <i class="fa-solid fa-chevron-left"></i>
-                    Ir a la consulta de saldos
+                    Ir a Transferencias
                 </a>
             </div>
         </div>
