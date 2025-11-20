@@ -188,55 +188,55 @@ def get_customer_movements(
     return movimientos_db
 
 @app.post("/customers/{customer_id}/transfer")
-def make_transfer(customer_id: int, data: TransferRequest, db: Session = Depends(get_db)):
+def make_transfer(from_account_id: int, to_account_id: int, amount: float, db: Session = Depends(get_db)):
     
-    origin = db.query(AccountDB).filter(
-        AccountDB.id == data.origin_account,
-        AccountDB.customer_id == customer_id
-    ).first()
+    if amount <= 0:
+        return {"error": "El monto debe ser mayor que cero"}
 
-    if not origin:
-        raise HTTPException(404, "Cuenta de origen no encontrada o no pertenece al cliente")
+    # Obtener cuentas
+    acc_out = db.query(AccountDB).filter(AccountDB.id == from_account_id).first()
+    acc_in  = db.query(AccountDB).filter(AccountDB.id == to_account_id).first()
 
-    destination = db.query(AccountDB).filter(
-        AccountDB.id == data.destination_account
-    ).first()
+    if not acc_out or not acc_in:
+        return {"error": "Cuenta origen o destino no encontrada"}
 
-    if not destination:
-        raise HTTPException(404, "Cuenta destino no existe")
+    if acc_out.balance < amount:
+        return {"error": "Fondos insuficientes"}
 
-    if origin.balance < data.amount:
-        raise HTTPException(400, "Fondos insuficientes")
+    # Actualizar balances
+    acc_out.balance -= amount
+    acc_in.balance  += amount
 
-    # Actualizar saldos
-    origin.balance -= data.amount
-    destination.balance += data.amount
+    # Fecha actual ISO
+    now = datetime.now().strftime("%Y-%m-%d")
 
-    # Registrar movimientos
+    # Movimiento salida
     mov_out = MovementDB(
-        account_id=origin.id,
-        amount=-data.amount,
-        type="transfer_out",
-        description=f"Transferencia enviada a cuenta {destination.id}"
-    )
-    mov_in = MovementDB(
-        account_id=destination.id,
-        amount=data.amount,
-        type="transfer_in",
-        description=f"Transferencia recibida desde cuenta {origin.id}"
+        account_id = acc_out.id,
+        customer_id = acc_out.customer_id,
+        account_type = acc_out.type,   # opcional
+        date = now,
+        description = f"Transferencia enviada a cuenta {acc_in.id}",
+        amount = -amount,
+        type = "transfer_out"
     )
 
-    db.add(mov_out)
-    db.add(mov_in)
+    # Movimiento entrada
+    mov_in = MovementDB(
+        account_id = acc_in.id,
+        customer_id = acc_in.customer_id,
+        account_type = acc_in.type,
+        date = now,
+        description = f"Transferencia recibida desde cuenta {acc_out.id}",
+        amount = amount,
+        type = "transfer_in"
+    )
+
+    db.add_all([mov_out, mov_in])
     db.commit()
 
-    return {
-        "message": "Transferencia realizada con éxito",
-        "from": origin.id,
-        "to": destination.id,
-        "amount": data.amount
-    }
-
+    return {"message": "Transferencia realizada correctamente"}
+    
 @app.get("/")
 def root():
     return {"message": "FastAPI Bank Service with Auth Running!"}
