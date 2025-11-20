@@ -2061,6 +2061,7 @@ def transferencias():
             error = f"No se pudo conectar con el servicio de cuentas: {e}"
 
     # Procesar formulario de transferencia
+    # Procesar formulario de transferencia
     if request.method == "POST":
         customer_id = request.form.get("customer_id")
         origin_account = request.form.get("origin_account")
@@ -2072,16 +2073,18 @@ def transferencias():
         else:
             try:
                 data = {
-                    "origin_account": int(origin_account),
-                    "destination_account": int(destination_account),
+                    "from_account_id": int(origin_account),
+                    "to_account_id": int(destination_account),
                     "amount": float(amount),
                 }
+
                 resp = requests.post(
                     f"{FASTAPI_BASE_URL}/customers/{customer_id}/transfer",
-                    json=data,
+                    json=data,  # ⬅️ se envía como JSON en el body
                     headers={"Authorization": f"Bearer {session['token']}"},
                     timeout=5,
                 )
+
                 if resp.status_code == 200:
                     message = "Transferencia realizada con éxito."
                     # refrescar cuentas con saldos actualizados
