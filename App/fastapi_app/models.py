@@ -49,6 +49,12 @@ class MovementDB(Base):
     amount = Column(Float, nullable=False)
     type = Column(String, nullable=False)  # "credito" o "debito"
 
+class MovementType(str, Enum):
+    CREDIT = "credit"
+    DEBIT = "debit"
+    TRANSFER_OUT = "transfer_out"
+    TRANSFER_IN = "transfer_in"
+
 # =========================
 #   MODELOS PYDANTIC
 # =========================
