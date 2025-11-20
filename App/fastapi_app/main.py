@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from fastapi import Query
+from pydantic import BaseModel
 
 
 from database import get_db, engine
@@ -30,7 +31,10 @@ Base.metadata.create_all(bind=engine)
 # Donde FastAPI “cree” que está el endpoint de login
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
-
+class TransferRequest(BaseModel):
+    origin_account: int
+    destination_account: int
+    amount: float
 # ========= DEPENDENCIA: usuario actual a partir del token =========
 
 def get_current_user(
@@ -181,6 +185,56 @@ def get_customer_movements(
         date_to=date_to,
     )
     return movimientos_db
+
+@app.post("/customers/{customer_id}/transfer")
+def make_transfer(customer_id: int, data: TransferRequest, db: Session = Depends(get_db)):
+    
+    origin = db.query(AccountDB).filter(
+        AccountDB.id == data.origin_account,
+        AccountDB.customer_id == customer_id
+    ).first()
+
+    if not origin:
+        raise HTTPException(404, "Cuenta de origen no encontrada o no pertenece al cliente")
+
+    destination = db.query(AccountDB).filter(
+        AccountDB.id == data.destination_account
+    ).first()
+
+    if not destination:
+        raise HTTPException(404, "Cuenta destino no existe")
+
+    if origin.balance < data.amount:
+        raise HTTPException(400, "Fondos insuficientes")
+
+    # Actualizar saldos
+    origin.balance -= data.amount
+    destination.balance += data.amount
+
+    # Registrar movimientos
+    mov_out = MovementDB(
+        account_id=origin.id,
+        amount=-data.amount,
+        type="transfer_out",
+        description=f"Transferencia enviada a cuenta {destination.id}"
+    )
+    mov_in = MovementDB(
+        account_id=destination.id,
+        amount=data.amount,
+        type="transfer_in",
+        description=f"Transferencia recibida desde cuenta {origin.id}"
+    )
+
+    db.add(mov_out)
+    db.add(mov_in)
+    db.commit()
+
+    return {
+        "message": "Transferencia realizada con éxito",
+        "from": origin.id,
+        "to": destination.id,
+        "amount": data.amount
+    }
 
 @app.get("/")
 def root():
