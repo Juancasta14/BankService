@@ -1970,16 +1970,6 @@ select:focus,input:focus{
 
         <form method="post">
                         <div class="field-group full-width">
-                    <label for="customer_id">ID del cliente</label>
-                    <input
-                        type="number"
-                        id="customer_id"
-                        name="customer_id"
-                        min="1"
-                        value="{{ customer_id or '' }}"
-                        enbled="false"
-                        required
-                    />
                     <div class="helper-text">
                         Cliente actual: <strong>#{{ customer_id or "N/A" }}</strong>
                     </div>
