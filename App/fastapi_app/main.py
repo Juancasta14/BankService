@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from fastapi import Query
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timedelta
+from uuid import uuid4
 
 from database import get_db, engine
 from models import (
@@ -250,7 +251,99 @@ def make_transfer(req: TransferRequest, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error interno al procesar la transferencia: {e}")
-        
+
+@app.post("/payments")
+def create_pse_payment(
+    data: PSETransactionCreate,
+    db: Session = Depends(get_db),
+):
+    # ID interno de la orden (para trazabilidad)
+    internal_order_id = f"PSE-{uuid4().hex[:20]}"
+
+    # Simulamos una URL de pago que te daría el 3rd party
+    payment_url = f"https://sandbox.pse.fake/pay/{internal_order_id}"
+
+    tx = PSETransactionDB(
+        internal_order_id=internal_order_id,
+        customer_id=data.customer_id,
+        account_id=data.account_id,
+        amount=data.amount,
+        currency=data.currency,
+        status="PENDING",
+        provider="PSE",
+        payment_url=payment_url,
+        return_url_success=data.return_url_success,
+        return_url_failure=data.return_url_failure,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
+        expires_at=datetime.utcnow() + timedelta(minutes=15),
+    )
+
+    db.add(tx)
+    db.commit()
+    db.refresh(tx)
+    return tx
+@app.get("/payments/{internal_order_id}"))
+def get_pse_payment(
+    internal_order_id: str,
+    db: Session = Depends(get_db),
+    # current_user: UserDB = Depends(get_current_user)
+):
+    tx = (
+        db.query(PSETransactionDB)
+        .filter(PSETransactionDB.internal_order_id == internal_order_id)
+        .first()
+    )
+
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transacción PSE no encontrada")
+
+    return tx
+
+@app.post("/callback")
+def pse_callback(data: PSECallbackIn, db: Session = Depends(get_db)):
+    tx = (
+        db.query(PSETransactionDB)
+        .filter(PSETransactionDB.internal_order_id == data.internal_order_id)
+        .first()
+    )
+
+    if not tx:
+        raise HTTPException(status_code=404, detail="Transacción PSE no encontrada")
+
+    # Actualizamos datos del proveedor
+    tx.status = data.status
+    tx.provider_tx_id = data.provider_tx_id
+    tx.provider_reference = data.provider_reference
+    tx.callback_status_raw = json.dumps(data.raw_payload or {})
+    tx.updated_at = datetime.utcnow()
+
+    if data.status.upper() == "SUCCESS":
+        account = db.query(AccountDB).filter(AccountDB.id == tx.account_id).first()
+        if not account:
+            raise HTTPException(status_code=400, detail="Cuenta asociada no existe")
+
+        # Acreditar dinero en la cuenta
+        account.balance += tx.amount
+
+        # Registrar movimiento (depósito PSE)
+        today = datetime.utcnow().strftime("%Y-%m-%d")
+        mov = MovementDB(
+            account_id=account.id,
+            customer_id=account.customer_id,
+            account_type=account.type,
+            date=today,
+            description=f"Depósito vía PSE ref {tx.internal_order_id}",
+            amount=tx.amount,
+            type="credito",
+        )
+        db.add(mov)
+
+    db.commit()
+
+    return {"message": "Callback procesado correctamente", "status": tx.status}
+
+
 @app.get("/")
 def root():
     return {"message": "FastAPI Bank Service with Auth Running!"}
