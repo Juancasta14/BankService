@@ -2239,7 +2239,7 @@ def pse():
     customer_id = session.get("customer_id")
     if not customer_id:
         flash("Primero selecciona un cliente en la pantalla de saldos.")
-        return redirect(url_for("saldos"))
+        return redirect(url_for("consultar_saldos"))
 
     token = session["token"]
 
