@@ -752,6 +752,7 @@ consulta_template = """
                             value="{{ customer_id or '' }}"
                             required
                         />
+                        <input type="hidden" name="customer_id" value="{{ customer_id }}">
                         <div class="helper-text">
                             Ejemplos de prueba: <strong>100</strong> o <strong>101</strong>.
                         </div>
@@ -1976,6 +1977,7 @@ select:focus,input:focus{
                         #{{ acc.id }} · {{ acc.type }} · ${{ "%.2f"|format(acc.balance) }}
                     </option>
                 {% endfor %}
+                
             </select>
 
             <br><br>
@@ -1988,21 +1990,9 @@ select:focus,input:focus{
             <button class="btn-primary" type="submit">
                 <i class="fa-solid fa-building-columns"></i> Pagar con PSE
             </button>
-             <input type="hidden" name="customer_id" value="{{ customer_id }}">
-
-    <!-- resto de campos -->
-    <label>Cuenta origen</label>
-    <select name="account_id" required>
-        <option value="">Seleccione una cuenta</option>
-        {% for acc in accounts %}
-            <option value="{{ acc.id }}">
-                #{{ acc.id }} · {{ acc.type }} · ${{ "%.2f"|format(acc.balance) }}
-            </option>
-        {% endfor %}
-    </select>
+        
 
         </form>
-
     </div>
 
     <br>
