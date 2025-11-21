@@ -2231,8 +2231,7 @@ def transferencias():
 
 @app.route("/pse", methods=["GET", "POST"])
 def pse():
-    # Requiere login
-    if "token" not in session or "customer_id" not in session:
+    if "token" not in session:
         return redirect(url_for("login"))
 
     customer_id = session["customer_id"]
