@@ -2051,6 +2051,17 @@ template_pse = """
             text-decoration: none;
             font-size: 14px;
         }
+        .status-error {
+    background: var(--error-bg);
+    color: var(--error-text);
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
     </style>
 </head>
 
@@ -2081,6 +2092,10 @@ template_pse = """
             <div class="field-group">
                 <label>Monto a transferir</label>
                 <input type="number" min="1" step="0.01" name="amount" id="amountInput" required>
+                    <div id="balanceError" class="status-error" style="display:none; margin-top:8px;">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        Saldo insuficiente para realizar este pago.
+    </div>
             </div>
 
             <input type="hidden" name="customer_id" value="{{ customer_id }}">
@@ -2377,31 +2392,18 @@ def pse():
     if "token" not in session:
         return redirect(url_for("login"))
 
-    token = session["token"]
-
-    # 1️⃣ Leer customer_id primero de la query (?customer_id=...)
-    #    luego del formulario (POST) y por último de la sesión
-    customer_id = (
-        request.args.get("customer_id")
-        or request.form.get("customer_id")
-        or session.get("customer_id")
-        or request.values.get("customer_id") 
-        or ""
-    )
-
+    customer_id = session.get("customer_id")
     if not customer_id:
         flash("Primero selecciona un cliente en la pantalla de saldos.")
-        return redirect(url_for("consultar_saldos"))
+        return redirect(url_for("saldos"))
 
-    # Guardar en sesión para siguientes requests
-    session["customer_id"] = customer_id
-
+    token = session["token"]
     accounts = []
     payment_url = None
     error = None
     message = None
 
-    # 2️⃣ Obtener las cuentas del cliente (solo una vez)
+    # Traer cuentas del cliente (igual que antes)
     try:
         resp = requests.get(
             f"{FASTAPI_BASE_URL}/customers/{customer_id}/accounts",
@@ -2411,52 +2413,69 @@ def pse():
         if resp.status_code == 200:
             accounts = resp.json()
         else:
-            error = f"No se pudieron cargar las cuentas del cliente (status {resp.status_code})."
+            error = "No se pudieron cargar las cuentas."
     except Exception as e:
         error = f"Error consultando cuentas: {e}"
 
-    # 3️⃣ Procesar formulario
+    # Procesar formulario
     if request.method == "POST":
         account_id = request.form.get("account_id")
         amount = request.form.get("amount")
 
         if not account_id or not amount:
             error = "Todos los campos son obligatorios."
-            flash(error)
         else:
             try:
-                data = {
-                    "customer_id": int(customer_id),
-                    "account_id": int(account_id),
-                    "amount": float(amount),
-                    "currency": "COP",
-                    "return_url_success": url_for(
-                        "pse_result", status="success", _external=True
-                    ),
-                    "return_url_failure": url_for(
-                        "pse_result", status="failure", _external=True
-                    ),
-                }
+                amount_f = float(amount)
 
-                # Debug para revisar que SÍ va el customer_id
-                print("PSE payload:", data, flush=True)
-
-                resp = requests.post(
-                    f"{FASTAPI_BASE_URL}/payments",
-                    json=data,
-                    headers={"Authorization": f"Bearer {token}"},
-                    timeout=5,
+                # 🔹 Buscar la cuenta seleccionada
+                selected = next(
+                    (a for a in accounts if str(a.get("id")) == str(account_id)), 
+                    None
                 )
 
-                if resp.status_code == 200:
-                    tx = resp.json()
-                    payment_url = tx.get("payment_url")
-                    message = "Orden PSE creada correctamente."
-
-                    if payment_url:
-                        return redirect(payment_url)
+                if not selected:
+                    error = "La cuenta seleccionada no existe."
                 else:
-                    error = f"Error creando pago PSE: {resp.status_code}"
+                    balance = float(selected.get("balance", 0))
+
+                    # 🔴 Validación de saldo insuficiente
+                    if amount_f > balance:
+                        error = (
+                            f"Saldo insuficiente en la cuenta #{selected.get('id')}. "
+                            f"Saldo disponible: {balance:.2f}"
+                        )
+                    else:
+                        # ✅ Saldo ok → crear orden PSE en el servicio FastAPI
+                        data = {
+                            "customer_id": customer_id,
+                            "account_id": int(account_id),
+                            "amount": amount_f,
+                            "currency": "COP",
+                            "return_url_success": url_for(
+                                "pse_result", status="success", _external=True
+                            ),
+                            "return_url_failure": url_for(
+                                "pse_result", status="failure", _external=True
+                            ),
+                        }
+
+                        resp = requests.post(
+                            f"{FASTAPI_BASE_URL}/payments",
+                            json=data,
+                            headers={"Authorization": f"Bearer {token}"},
+                            timeout=5,
+                        )
+
+                        if resp.status_code == 200:
+                            tx = resp.json()
+                            payment_url = tx.get("payment_url")
+                            message = "Orden PSE creada correctamente."
+
+                            if payment_url:
+                                return redirect(payment_url)
+                        else:
+                            error = f"Error creando pago PSE: {resp.status_code}"
 
             except Exception as e:
                 error = f"Error creando pago: {e}"
@@ -2464,10 +2483,10 @@ def pse():
     return render_template_string(
         template_pse,
         accounts=accounts,
+        customer_id=customer_id,
         error=error,
         message=message,
         payment_url=payment_url,
-        customer_id=customer_id,
     )
 
 @app.route("/pse/resultado")
