@@ -2131,22 +2131,39 @@ template_pse = """
     const sel = document.getElementById("accountSelect");
     const amt = document.getElementById("amountInput");
     const card = document.getElementById("summaryCard");
+    const balanceError = document.getElementById("balanceError");
+    const submitBtn = document.querySelector(".btn-primary");
 
     function updateSummary() {
         let account = sel.options[sel.selectedIndex];
-        let amount = amt.value;
+        let amount = parseFloat(amt.value || "0");
+        let hasAccount = !!account.value;
 
-        if (!account.value || !amount || amount <= 0) {
-            card.style.display = "none";
+        // Ocultar todo por defecto
+        card.style.display = "none";
+        balanceError.style.display = "none";
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = "1";
+
+        if (!hasAccount || amount <= 0) {
             return;
         }
 
+        let balance = parseFloat(account.dataset.balance || "0");
+
+        // Actualizar resumen
         document.getElementById("sumAccount").innerText = "#" + account.value;
         document.getElementById("sumType").innerText = account.dataset.type;
-        document.getElementById("sumBalance").innerText = "$" + parseFloat(account.dataset.balance).toFixed(2);
-        document.getElementById("sumAmount").innerText = "$" + parseFloat(amount).toFixed(2);
-
+        document.getElementById("sumBalance").innerText = "$" + balance.toFixed(2);
+        document.getElementById("sumAmount").innerText = "$" + amount.toFixed(2);
         card.style.display = "block";
+
+    
+        if (amount > balance) {
+            balanceError.style.display = "flex";
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = "0.6";
+        }
     }
 
     sel.addEventListener("change", updateSummary);
