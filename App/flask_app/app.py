@@ -2255,6 +2255,8 @@ def pse():
         request.args.get("customer_id")
         or request.form.get("customer_id")
         or session.get("customer_id")
+        or request.values.get("customer_id") 
+        or ""
     )
 
     if not customer_id:
