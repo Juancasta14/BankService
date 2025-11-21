@@ -791,7 +791,7 @@ consulta_template = """
         id="pseBtn"
         class="btn-transfer"
         data-tooltip="Realizar transferencia con PSE"
-        onclick="window.location.href='{{ url_for('pse') }}'">
+        oonclick="window.location.href='{{ url_for('pse', customer_id=customer_id) }}'">
         <span class="btn-content">
             <i class="fa-solid fa-arrow-right-arrow-left"></i>
             <span>Transferir PSE</span>
@@ -2070,6 +2070,7 @@ def consultar_saldos():
                 )
                 if resp.status_code == 200:
                     summary = resp.json()
+                    session["customer_id"] = customer_id
                 elif resp.status_code == 404:
                     error = "No se encontró un cliente con ese ID."
                 elif resp.status_code == 401:
