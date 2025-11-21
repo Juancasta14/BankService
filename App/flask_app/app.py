@@ -1926,18 +1926,13 @@ template_pse = """
             --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.10);
         }
 
-        * {
-            box-sizing: border-box;
-        }
-
         body {
             margin: 0;
             min-height: 100vh;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: radial-gradient(circle at top left, #e0ebff 0, #eef3ff 30%, #f5f7ff 100%);
+            background: radial-gradient(circle at top left, #e0ebff 0, #eef3ff 35%, #f5f7ff 100%);
             color: var(--text-main);
             display: flex;
-            align-items: center;
             justify-content: center;
         }
 
@@ -1965,22 +1960,18 @@ template_pse = """
             box-shadow: 0 12px 30px rgba(37, 99, 235, 0.45);
         }
 
-        .title-icon i {
-            font-size: 20px;
-        }
-
         h1 {
-            font-size: 28px;
             margin: 0;
-            letter-spacing: 0.02em;
+            font-size: 28px;
         }
 
         .card {
-            background: rgba(249, 251, 255, 0.96);
-            border-radius: 26px;
+            background: var(--card-bg);
             border: 1px solid var(--card-border);
-            padding: 28px 28px 24px;
+            border-radius: 26px;
+            padding: 28px;
             box-shadow: var(--shadow-soft);
+            margin-bottom: 26px;
         }
 
         .field-group {
@@ -1995,208 +1986,158 @@ template_pse = """
             margin-bottom: 6px;
         }
 
-        .helper-text {
-            font-size: 13px;
-            color: var(--text-soft);
-            margin-bottom: 14px;
-        }
-
-        .helper-text strong {
-            color: var(--accent-strong);
-        }
-
         select,
         input[type="number"] {
             width: 100%;
-            font-size: 14px;
             padding: 12px 16px;
             border-radius: 999px;
             border: 1px solid #d0ddff;
             background: var(--input-bg);
-            color: var(--text-main);
+            font-size: 14px;
             outline: none;
-            transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-            appearance: none;
         }
 
         select:focus,
         input[type="number"]:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
             background: #fff;
-        }
-
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-            margin: 0;
-        }
-
-        .btn-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 8px;
-            align-items: center;
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
         }
 
         .btn-primary {
-            border: none;
             border-radius: 999px;
             padding: 11px 26px;
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 0.01em;
+            border: none;
             background: linear-gradient(135deg, #2563eb, #1d4ed8);
             color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 9px;
-            cursor: pointer;
+            gap: 10px;
             box-shadow: 0 14px 32px rgba(37, 99, 235, 0.45);
-            transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
         }
 
-        .btn-primary i {
-            font-size: 15px;
+        .summary-card {
+            margin-top: 8px;
+            padding: 20px;
+            border: 1px solid var(--card-border);
+            background: #ffffffcc;
+            border-radius: 22px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+            display: none;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            filter: brightness(1.03);
-            box-shadow: 0 16px 40px rgba(37, 99, 235, 0.55);
+        .summary-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--accent-strong);
         }
 
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.40);
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 14px;
         }
 
         .link-back {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            margin-top: 18px;
             color: var(--accent-strong);
-            font-size: 14px;
             text-decoration: none;
-        }
-
-        .link-back i {
-            font-size: 13px;
-        }
-
-        .link-back:hover {
-            text-decoration: underline;
-        }
-
-        .status-error,
-        .status-ok {
-            border-radius: 999px;
-            padding: 9px 14px;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 14px;
-        }
-
-        .status-error {
-            background: var(--error-bg);
-            color: var(--error-text);
-        }
-
-        .status-ok {
-            background: var(--success-bg);
-            color: var(--success-text);
-        }
-
-        .status-error i,
-        .status-ok i {
             font-size: 14px;
-        }
-
-        @media (max-width: 640px) {
-            .page {
-                width: 100%;
-                margin: 20px 16px;
-            }
-
-            .card {
-                padding: 20px 18px 18px;
-            }
-
-            h1 {
-                font-size: 22px;
-            }
         }
     </style>
 </head>
+
 <body>
 <div class="page">
 
     <div class="title-wrap">
-        <div class="title-icon">
-            <i class="fa-solid fa-money-check-dollar"></i>
-        </div>
+        <div class="title-icon"><i class="fa-solid fa-money-check-dollar"></i></div>
         <h1>Pago con PSE</h1>
     </div>
 
     <div class="card">
-
-        {% if error %}
-        <div class="status-error">
-            <i class="fa-solid fa-circle-xmark"></i>
-            <span>{{ error }}</span>
-        </div>
-        {% endif %}
-
-        {% if message %}
-        <div class="status-ok">
-            <i class="fa-solid fa-circle-check"></i>
-            <span>{{ message }}</span>
-        </div>
-        {% endif %}
-
         <form method="post">
-            <div class="field-group">
-                <div class="helper-text">
-                    Cliente actual: <strong>#{{ customer_id or "N/A" }}</strong>
-                </div>
-            </div>
+            <div class="helper-text">Cliente actual: <strong>#{{ customer_id }}</strong></div>
 
             <div class="field-group">
-                <label for="account_id">Cuenta origen</label>
-                <select id="account_id" name="account_id" required>
+                <label>Cuenta origen</label>
+                <select name="account_id" id="accountSelect" required>
                     <option value="">Seleccione una cuenta</option>
                     {% for acc in accounts %}
-                        <option value="{{ acc.id }}">
-                            #{{ acc.id }} · {{ acc.type|capitalize }} · ${{ "%.2f"|format(acc.balance) }}
-                        </option>
+                    <option value="{{ acc.id }}" data-type="{{ acc.type }}" data-balance="{{ acc.balance }}">
+                        #{{ acc.id }} · {{ acc.type }} · ${{ "%.2f"|format(acc.balance) }}
+                    </option>
                     {% endfor %}
                 </select>
             </div>
 
             <div class="field-group">
-                <label for="amount">Monto a transferir</label>
-                <input id="amount" type="number" name="amount" min="1" step="0.01" placeholder="Ej. 150000" required>
+                <label>Monto a transferir</label>
+                <input type="number" min="1" step="0.01" name="amount" id="amountInput" required>
             </div>
 
             <input type="hidden" name="customer_id" value="{{ customer_id }}">
 
-            <div class="btn-row">
-                <button class="btn-primary" type="submit">
-                    <i class="fa-solid fa-building-columns"></i>
-                    <span>Pagar con PSE</span>
-                </button>
+            <!-- Resumen dinámico -->
+            <div class="summary-card" id="summaryCard">
+                <div class="summary-title"><i class="fa-solid fa-receipt"></i> Resumen del pago</div>
+
+                <div class="summary-row"><span>Cuenta origen:</span> <strong id="sumAccount"></strong></div>
+                <div class="summary-row"><span>Tipo de cuenta:</span> <strong id="sumType"></strong></div>
+                <div class="summary-row"><span>Saldo disponible:</span> <strong id="sumBalance"></strong></div>
+                <div class="summary-row"><span>Monto a pagar:</span> <strong id="sumAmount"></strong></div>
+                <div class="summary-row"><span>Moneda:</span> <strong>COP</strong></div>
             </div>
+
+            <br>
+
+            <button type="submit" class="btn-primary">
+                <i class="fa-solid fa-building-columns"></i>
+                Pagar con PSE
+            </button>
         </form>
     </div>
 
-    <a href="{{ url_for('consultar_saldos', customer_id=customer_id) }}" class="link-back">
-        <i class="fa-solid fa-arrow-left"></i>
-        <span>Volver</span>
+    <a class="link-back" href="{{ url_for('consultar_saldos', customer_id=customer_id) }}">
+        <i class="fa-solid fa-arrow-left"></i> Volver
     </a>
+
 </div>
+
+
+<script>
+    const sel = document.getElementById("accountSelect");
+    const amt = document.getElementById("amountInput");
+    const card = document.getElementById("summaryCard");
+
+    function updateSummary() {
+        let account = sel.options[sel.selectedIndex];
+        let amount = amt.value;
+
+        if (!account.value || !amount || amount <= 0) {
+            card.style.display = "none";
+            return;
+        }
+
+        document.getElementById("sumAccount").innerText = "#" + account.value;
+        document.getElementById("sumType").innerText = account.dataset.type;
+        document.getElementById("sumBalance").innerText = "$" + parseFloat(account.dataset.balance).toFixed(2);
+        document.getElementById("sumAmount").innerText = "$" + parseFloat(amount).toFixed(2);
+
+        card.style.display = "block";
+    }
+
+    sel.addEventListener("change", updateSummary);
+    amt.addEventListener("input", updateSummary);
+</script>
+
 </body>
 </html>
 """
