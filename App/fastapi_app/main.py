@@ -17,6 +17,7 @@ from models import (
     PSETransactionDB,
     PSETransactionCreate,
     PSETransactionOut,
+    PSECallbackIn,
     Account,
     Wallet,
     Movement,
@@ -284,7 +285,7 @@ def create_pse_payment(
     db.refresh(tx)
     return tx
     
-@app.get("/payments/{internal_order_id}"))
+@app.get("/payments/{internal_order_id}")
 def get_pse_payment(
     internal_order_id: str,
     db: Session = Depends(get_db),
