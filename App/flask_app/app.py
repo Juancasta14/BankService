@@ -1977,6 +1977,7 @@ select:focus,input:focus{
                         name="customer_id"
                         min="1"
                         value="{{ customer_id or '' }}"
+                        enbled="false"
                         required
                     />
                     <div class="helper-text">
