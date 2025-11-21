@@ -2263,7 +2263,7 @@ def pse():
 
     if not customer_id:
         flash("Primero selecciona un cliente en la pantalla de saldos.")
-        return redirect(url_for("saldos"))
+        return redirect(url_for("consultar_saldos"))
     session["customer_id"] = customer_id
 
     accounts = []
