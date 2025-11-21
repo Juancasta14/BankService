@@ -1961,57 +1961,52 @@ select:focus,input:focus{
     <div class="card">
 
         {% if error %}
-        <div class="status-error"><i class="fa-solid fa-circle-xmark"></i> {{ error }}</div>
+        <div class="status-error">
+            <i class="fa-solid fa-circle-xmark"></i> {{ error }}
+        </div>
         {% endif %}
 
         {% if message %}
-        <div class="status-ok"><i class="fa-solid fa-circle-check"></i> {{ message }}</div>
+        <div class="status-ok">
+            <i class="fa-solid fa-circle-check"></i> {{ message }}
+        </div>
         {% endif %}
 
-        <form method="post">
-                        <div class="field-group full-width">
-                    <div class="helper-text">
-                        Cliente actual: <strong>#{{ customer_id or "N/A" }}</strong>
-                    </div>
-            <label>Cuenta origen</label>
-            <select name="account_id" required>
-                <option value="">Seleccione una cuenta</option>
-                {% for acc in accounts %}
-                    <option value="{{ acc.id }}">
-                        #{{ acc.id }} · {{ acc.type }} · ${{ "%.2f"|format(acc.balance) }}
-                    </option>
-                {% endfor %}
-                
-            </select>
+        <!-- Importante: action con customer_id en la URL -->
+        <form method="post" action="{{ url_for('pse', customer_id=customer_id) }}">
+            <!-- Campo oculto por si el POST lo necesita -->
+            <input type="hidden" name="customer_id" value="{{ customer_id }}">
 
-            <br><br>
+            <div class="field-group full-width">
+                <div class="helper-text">
+                    Cliente actual: <strong>#{{ customer_id or "N/A" }}</strong>
+                </div>
 
-            <label>Monto a transferir</label>
-            <input type="number" name="amount" min="1" step="0.01" required>
+                <label>Cuenta origen</label>
+                <select name="account_id" required>
+                    <option value="">Seleccione una cuenta</option>
+                    {% for acc in accounts %}
+                        <option value="{{ acc.id }}">
+                            #{{ acc.id }} · {{ acc.type }} · ${{ "%.2f"|format(acc.balance) }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-            <br><br>
+            <div class="field-group full-width">
+                <label>Monto a transferir</label>
+                <input type="number" name="amount" min="1" step="0.01" required>
+            </div>
 
             <button class="btn-primary" type="submit">
                 <i class="fa-solid fa-building-columns"></i> Pagar con PSE
             </button>
-        
-  <input type="hidden" name="customer_id" value="{{ customer_id }}">
         </form>
     </div>
 
     <br>
     <a href="{{ url_for('consultar_saldos') }}">← Volver</a>
-{% if error %}
-<div class="status-error">
-  <i class="fa-solid fa-circle-xmark"></i> {{ error }}
-</div>
-{% endif %}
 
-{% if message %}
-<div class="status-ok">
-  <i class="fa-solid fa-circle-check"></i> {{ message }}
-</div>
-{% endif %}
 </div>
 </body>
 </html>
