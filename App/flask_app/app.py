@@ -784,6 +784,19 @@ consulta_template = """
         </span>
     </button>
 </div>
+<div class="btn-container">
+    <button
+        type="button"
+        id="pseBtn"
+        class="btn-transfer"
+        data-tooltip="Realizar transferencia con PSE"
+        onclick="window.location.href='{{ url_for('transferencias') }}'">
+        <span class="btn-content">
+            <i class="fa-solid fa-arrow-right-arrow-left"></i>
+            <span>Transferir PSE</span>
+        </span>
+    </button>
+</div>
 </div>                       
                 {% if error %}
                     <div class="error-message">
