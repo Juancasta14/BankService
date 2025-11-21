@@ -283,11 +283,11 @@ def create_pse_payment(
     db.commit()
     db.refresh(tx)
     return tx
+    
 @app.get("/payments/{internal_order_id}"))
 def get_pse_payment(
     internal_order_id: str,
     db: Session = Depends(get_db),
-    # current_user: UserDB = Depends(get_current_user)
 ):
     tx = (
         db.query(PSETransactionDB)
