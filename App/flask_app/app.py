@@ -1988,13 +1988,36 @@ select:focus,input:focus{
             <button class="btn-primary" type="submit">
                 <i class="fa-solid fa-building-columns"></i> Pagar con PSE
             </button>
+             <input type="hidden" name="customer_id" value="{{ customer_id }}">
+
+    <!-- resto de campos -->
+    <label>Cuenta origen</label>
+    <select name="account_id" required>
+        <option value="">Seleccione una cuenta</option>
+        {% for acc in accounts %}
+            <option value="{{ acc.id }}">
+                #{{ acc.id }} · {{ acc.type }} · ${{ "%.2f"|format(acc.balance) }}
+            </option>
+        {% endfor %}
+    </select>
+
         </form>
 
     </div>
 
     <br>
     <a href="{{ url_for('consulta_saldos') }}">← Volver</a>
+{% if error %}
+<div class="status-error">
+  <i class="fa-solid fa-circle-xmark"></i> {{ error }}
+</div>
+{% endif %}
 
+{% if message %}
+<div class="status-ok">
+  <i class="fa-solid fa-circle-check"></i> {{ message }}
+</div>
+{% endif %}
 </div>
 </body>
 </html>
@@ -2231,24 +2254,23 @@ def transferencias():
 
 @app.route("/pse", methods=["GET", "POST"])
 def pse():
-    # Verifica login
+    # 1. Verificar login
     if "token" not in session:
         return redirect(url_for("login"))
 
-    # Intentar obtener customer_id de la sesión sin romper la app
-    customer_id = session.get("customer_id")
+    token = session["token"]
+    customer_id = request.form.get("customer_id") or session.get("customer_id")
+
     if not customer_id:
         flash("Primero selecciona un cliente en la pantalla de saldos.")
-        return redirect(url_for("consultar_saldos"))
-
-    token = session["token"]
+        return redirect(url_for("saldos"))
+    session["customer_id"] = customer_id
 
     accounts = []
     payment_url = None
     error = None
     message = None
 
-    # Obtener cuentas del cliente
     try:
         resp = requests.get(
             f"{FASTAPI_BASE_URL}/customers/{customer_id}/accounts",
@@ -2258,27 +2280,35 @@ def pse():
         if resp.status_code == 200:
             accounts = resp.json()
         else:
-            error = "No se pudieron cargar las cuentas del cliente."
+            error = f"No se pudieron cargar las cuentas del cliente (status {resp.status_code})."
     except Exception as e:
         error = f"Error consultando cuentas: {e}"
 
-    # Procesar formulario de creación de pago
+    # 3. Procesar formulario de pago PSE
     if request.method == "POST":
         account_id = request.form.get("account_id")
         amount = request.form.get("amount")
 
         if not account_id or not amount:
             error = "Todos los campos son obligatorios."
+            flash(error)
         else:
             try:
                 data = {
-                    "customer_id": customer_id,
+                    "customer_id": int(customer_id),
                     "account_id": int(account_id),
                     "amount": float(amount),
                     "currency": "COP",
-                    "return_url_success": url_for("pse_result", status="success", _external=True),
-                    "return_url_failure": url_for("pse_result", status="failure", _external=True),
+                    "return_url_success": url_for(
+                        "pse_result", status="success", _external=True
+                    ),
+                    "return_url_failure": url_for(
+                        "pse_result", status="failure", _external=True
+                    ),
                 }
+
+                # (opcional) imprimir en logs para verificar que va el customer_id
+                print("PSE payload:", data, flush=True)
 
                 resp = requests.post(
                     f"{FASTAPI_BASE_URL}/payments",
@@ -2292,7 +2322,6 @@ def pse():
                     payment_url = tx.get("payment_url")
                     message = "Orden PSE creada correctamente."
 
-                    # Redirigir al 3rd-party PSE SIMULADO
                     if payment_url:
                         return redirect(payment_url)
                 else:
@@ -2306,7 +2335,8 @@ def pse():
         accounts=accounts,
         error=error,
         message=message,
-        payment_url=payment_url
+        payment_url=payment_url,
+        customer_id=customer_id,
     )
 
 @app.route("/pse/resultado")
