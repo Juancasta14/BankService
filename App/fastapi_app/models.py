@@ -180,6 +180,13 @@ class PSETransactionOut(BaseModel):
         from_attributes = True  # antes orm_mode = True
 
 
+class PSECallbackIn(BaseModel):
+    internal_order_id: str
+    status: str                    
+    provider_tx_id: Optional[str] = None
+    provider_reference: Optional[str] = None
+    raw_payload: Optional[dict] = None
+
 # =========================
 #   HELPERS DE CONSULTA
 # =========================
