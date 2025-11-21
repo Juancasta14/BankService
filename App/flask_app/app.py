@@ -1996,7 +1996,7 @@ select:focus,input:focus{
     </div>
 
     <br>
-    <a href="{{ url_for('consulta_saldos') }}">← Volver</a>
+    <a href="{{ url_for('consultar_saldos') }}">← Volver</a>
 {% if error %}
 <div class="status-error">
   <i class="fa-solid fa-circle-xmark"></i> {{ error }}
