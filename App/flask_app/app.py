@@ -1887,6 +1887,105 @@ transfer_template = """
 </html>
 """
 
+template_pse = """
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>PSE - Banco</title>
+<link rel="stylesheet"
+ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+body{
+    margin:0;
+    font-family:system-ui;
+    background:radial-gradient(circle at top,#e6f0ff 0,#f5f7ff 40%,#f5f7fb 100%);
+    color:#1f2a4d;
+}
+.page{max-width:1100px;margin:30px auto;padding:0 24px;}
+.title-wrap{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.title-icon{width:40px;height:40px;border-radius:16px;background:linear-gradient(135deg,#2563eb,#4f46e5);
+    display:flex;justify-content:center;align-items:center;color:#fff;}
+.card{
+    background:white;border-radius:20px;padding:24px 28px;
+    box-shadow:0 18px 45px rgba(15,23,42,.08);
+}
+label{font-size:14px;font-weight:600;color:#4b5563;margin-bottom:6px;display:block;}
+select,input{
+    width:100%;padding:10px 14px;border-radius:999px;border:1px solid #cbd5e1;
+    font-size:14px;background:#f8fafc;outline:none;
+}
+select:focus,input:focus{
+    border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15);
+    background:white;
+}
+.btn-primary{
+    background:linear-gradient(135deg,#2563eb,#4f46e5);border:none;
+    color:white;padding:10px 22px;border-radius:999px;font-size:15px;
+    display:inline-flex;align-items:center;gap:10px;cursor:pointer;
+    box-shadow:0 14px 30px rgba(37,99,235,.4);
+}
+.btn-primary:hover{transform:translateY(-1px);}
+.status-ok{
+    background:#ecfdf3;color:#166534;border:1px solid #bbf7d0;
+    padding:10px 14px;border-radius:12px;margin-bottom:10px;
+}
+.status-error{
+    background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;
+    padding:10px 14px;border-radius:12px;margin-bottom:10px;
+}
+</style>
+</head>
+<body>
+<div class="page">
+    
+    <div class="title-wrap">
+        <div class="title-icon"><i class="fa-solid fa-money-check-dollar"></i></div>
+        <h1>Pago con PSE</h1>
+    </div>
+
+    <div class="card">
+
+        {% if error %}
+        <div class="status-error"><i class="fa-solid fa-circle-xmark"></i> {{ error }}</div>
+        {% endif %}
+
+        {% if message %}
+        <div class="status-ok"><i class="fa-solid fa-circle-check"></i> {{ message }}</div>
+        {% endif %}
+
+        <form method="post">
+            <label>Cuenta origen</label>
+            <select name="account_id" required>
+                <option value="">Seleccione una cuenta</option>
+                {% for acc in accounts %}
+                    <option value="{{ acc.id }}">
+                        #{{ acc.id }} · {{ acc.type }} · ${{ "%.2f"|format(acc.balance) }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <br><br>
+
+            <label>Monto a transferir</label>
+            <input type="number" name="amount" min="1" step="0.01" required>
+
+            <br><br>
+
+            <button class="btn-primary" type="submit">
+                <i class="fa-solid fa-building-columns"></i> Pagar con PSE
+            </button>
+        </form>
+
+    </div>
+
+    <br>
+    <a href="{{ url_for('consulta_saldos') }}">← Volver</a>
+
+</div>
+</body>
+</html>
+    """
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -2119,7 +2218,7 @@ def transferencias():
 
 @app.route("/pse", methods=["GET", "POST"])
 def pse():
-    # Validar login
+    # Requiere login
     if "token" not in session or "customer_id" not in session:
         return redirect(url_for("login"))
 
@@ -2131,7 +2230,7 @@ def pse():
     error = None
     message = None
 
-    # Traer cuentas del cliente para el combo
+    # Traer cuentas del cliente
     try:
         resp = requests.get(
             f"{FASTAPI_BASE_URL}/customers/{customer_id}/accounts",
@@ -2141,17 +2240,17 @@ def pse():
         if resp.status_code == 200:
             accounts = resp.json()
         else:
-            error = "No se pudieron cargar las cuentas del cliente."
+            error = "No se pudieron cargar las cuentas."
     except Exception as e:
-        error = f"Error al consultar cuentas: {e}"
+        error = f"Error consultando cuentas: {e}"
 
-    # Si el usuario envió el formulario, crear el pago PSE
+    # Procesar formulario
     if request.method == "POST":
         account_id = request.form.get("account_id")
         amount = request.form.get("amount")
 
         if not account_id or not amount:
-            error = "Debes seleccionar una cuenta y un monto."
+            error = "Todos los campos son obligatorios."
         else:
             try:
                 data = {
@@ -2159,12 +2258,8 @@ def pse():
                     "account_id": int(account_id),
                     "amount": float(amount),
                     "currency": "COP",
-                    "return_url_success": url_for(
-                        "pse_result", status="success", _external=True
-                    ),
-                    "return_url_failure": url_for(
-                        "pse_result", status="failure", _external=True
-                    ),
+                    "return_url_success": url_for("pse_result", status="success", _external=True),
+                    "return_url_failure": url_for("pse_result", status="failure", _external=True),
                 }
 
                 resp = requests.post(
@@ -2179,24 +2274,15 @@ def pse():
                     payment_url = tx.get("payment_url")
                     message = "Orden PSE creada correctamente."
 
-                    # redirigir automáticamente a la URL de pago
                     if payment_url:
                         return redirect(payment_url)
-
-                    #   solo mostrar el link en la vista 
                 else:
-                    error = f"Error creando pago PSE (status {resp.status_code})."
+                    error = f"Error creando pago PSE: {resp.status_code}"
 
             except Exception as e:
-                error = f"Error al crear pago PSE: {e}"
+                error = f"Error creando pago: {e}"
 
-    return render_template(
-        "pse.html",
-        accounts=accounts,
-        payment_url=payment_url,
-        error=error,
-        message=message,
-    )
+    return render_template_string(template_pse, accounts=accounts, error=error, message=message, payment_url=payment_url)
 
 
 @app.route("/pse/resultado")
