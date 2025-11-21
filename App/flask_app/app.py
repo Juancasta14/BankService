@@ -2231,10 +2231,16 @@ def transferencias():
 
 @app.route("/pse", methods=["GET", "POST"])
 def pse():
+    # Verifica login
     if "token" not in session:
         return redirect(url_for("login"))
 
-    customer_id = session["customer_id"]
+    # Intentar obtener customer_id de la sesión sin romper la app
+    customer_id = session.get("customer_id")
+    if not customer_id:
+        flash("Primero selecciona un cliente en la pantalla de saldos.")
+        return redirect(url_for("saldos"))
+
     token = session["token"]
 
     accounts = []
@@ -2242,7 +2248,7 @@ def pse():
     error = None
     message = None
 
-    # Traer cuentas del cliente
+    # Obtener cuentas del cliente
     try:
         resp = requests.get(
             f"{FASTAPI_BASE_URL}/customers/{customer_id}/accounts",
@@ -2252,11 +2258,11 @@ def pse():
         if resp.status_code == 200:
             accounts = resp.json()
         else:
-            error = "No se pudieron cargar las cuentas."
+            error = "No se pudieron cargar las cuentas del cliente."
     except Exception as e:
         error = f"Error consultando cuentas: {e}"
 
-    # Procesar formulario
+    # Procesar formulario de creación de pago
     if request.method == "POST":
         account_id = request.form.get("account_id")
         amount = request.form.get("amount")
@@ -2286,6 +2292,7 @@ def pse():
                     payment_url = tx.get("payment_url")
                     message = "Orden PSE creada correctamente."
 
+                    # Redirigir al 3rd-party PSE SIMULADO
                     if payment_url:
                         return redirect(payment_url)
                 else:
@@ -2294,8 +2301,13 @@ def pse():
             except Exception as e:
                 error = f"Error creando pago: {e}"
 
-    return render_template_string(template_pse, accounts=accounts, error=error, message=message, payment_url=payment_url)
-
+    return render_template_string(
+        template_pse,
+        accounts=accounts,
+        error=error,
+        message=message,
+        payment_url=payment_url
+    )
 
 @app.route("/pse/resultado")
 def pse_result():
