@@ -1991,7 +1991,7 @@ select:focus,input:focus{
                 <i class="fa-solid fa-building-columns"></i> Pagar con PSE
             </button>
         
-
+  <input type="hidden" name="customer_id" value="{{ customer_id }}">
         </form>
     </div>
 
