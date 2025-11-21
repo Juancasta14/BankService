@@ -1905,56 +1905,239 @@ template_pse = """
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>PSE - Banco</title>
-<link rel="stylesheet"
- href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-<style>
-body{
-    margin:0;
-    font-family:system-ui;
-    background:radial-gradient(circle at top,#e6f0ff 0,#f5f7ff 40%,#f5f7fb 100%);
-    color:#1f2a4d;
-}
-.page{max-width:1100px;margin:30px auto;padding:0 24px;}
-.title-wrap{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
-.title-icon{width:40px;height:40px;border-radius:16px;background:linear-gradient(135deg,#2563eb,#4f46e5);
-    display:flex;justify-content:center;align-items:center;color:#fff;}
-.card{
-    background:white;border-radius:20px;padding:24px 28px;
-    box-shadow:0 18px 45px rgba(15,23,42,.08);
-}
-label{font-size:14px;font-weight:600;color:#4b5563;margin-bottom:6px;display:block;}
-select,input{
-    width:100%;padding:10px 14px;border-radius:999px;border:1px solid #cbd5e1;
-    font-size:14px;background:#f8fafc;outline:none;
-}
-select:focus,input:focus{
-    border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15);
-    background:white;
-}
-.btn-primary{
-    background:linear-gradient(135deg,#2563eb,#4f46e5);border:none;
-    color:white;padding:10px 22px;border-radius:999px;font-size:15px;
-    display:inline-flex;align-items:center;gap:10px;cursor:pointer;
-    box-shadow:0 14px 30px rgba(37,99,235,.4);
-}
-.btn-primary:hover{transform:translateY(-1px);}
-.status-ok{
-    background:#ecfdf3;color:#166534;border:1px solid #bbf7d0;
-    padding:10px 14px;border-radius:12px;margin-bottom:10px;
-}
-.status-error{
-    background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;
-    padding:10px 14px;border-radius:12px;margin-bottom:10px;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>Pago con PSE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg: #eef3ff;
+            --card-bg: #f9fbff;
+            --card-border: #d7e3ff;
+            --accent: #2563eb;
+            --accent-soft: #e0ecff;
+            --accent-strong: #1d4ed8;
+            --text-main: #0f172a;
+            --text-soft: #64748b;
+            --error-bg: #fee2e2;
+            --error-text: #b91c1c;
+            --success-bg: #dcfce7;
+            --success-text: #15803d;
+            --input-bg: #f5f7ff;
+            --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.10);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #e0ebff 0, #eef3ff 30%, #f5f7ff 100%);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page {
+            width: min(1040px, 100% - 48px);
+            margin: 32px auto;
+        }
+
+        .title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .title-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            box-shadow: 0 12px 30px rgba(37, 99, 235, 0.45);
+        }
+
+        .title-icon i {
+            font-size: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin: 0;
+            letter-spacing: 0.02em;
+        }
+
+        .card {
+            background: rgba(249, 251, 255, 0.96);
+            border-radius: 26px;
+            border: 1px solid var(--card-border);
+            padding: 28px 28px 24px;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .field-group {
+            margin-bottom: 22px;
+        }
+
+        .field-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-soft);
+            margin-bottom: 6px;
+        }
+
+        .helper-text {
+            font-size: 13px;
+            color: var(--text-soft);
+            margin-bottom: 14px;
+        }
+
+        .helper-text strong {
+            color: var(--accent-strong);
+        }
+
+        select,
+        input[type="number"] {
+            width: 100%;
+            font-size: 14px;
+            padding: 12px 16px;
+            border-radius: 999px;
+            border: 1px solid #d0ddff;
+            background: var(--input-bg);
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+            appearance: none;
+        }
+
+        select:focus,
+        input[type="number"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+            background: #fff;
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            margin: 0;
+        }
+
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 8px;
+            align-items: center;
+        }
+
+        .btn-primary {
+            border: none;
+            border-radius: 999px;
+            padding: 11px 26px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            cursor: pointer;
+            box-shadow: 0 14px 32px rgba(37, 99, 235, 0.45);
+            transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+        }
+
+        .btn-primary i {
+            font-size: 15px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.03);
+            box-shadow: 0 16px 40px rgba(37, 99, 235, 0.55);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.40);
+        }
+
+        .link-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 18px;
+            color: var(--accent-strong);
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .link-back i {
+            font-size: 13px;
+        }
+
+        .link-back:hover {
+            text-decoration: underline;
+        }
+
+        .status-error,
+        .status-ok {
+            border-radius: 999px;
+            padding: 9px 14px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .status-error {
+            background: var(--error-bg);
+            color: var(--error-text);
+        }
+
+        .status-ok {
+            background: var(--success-bg);
+            color: var(--success-text);
+        }
+
+        .status-error i,
+        .status-ok i {
+            font-size: 14px;
+        }
+
+        @media (max-width: 640px) {
+            .page {
+                width: 100%;
+                margin: 20px 16px;
+            }
+
+            .card {
+                padding: 20px 18px 18px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
 </head>
 <body>
 <div class="page">
-    
+
     <div class="title-wrap">
-        <div class="title-icon"><i class="fa-solid fa-money-check-dollar"></i></div>
+        <div class="title-icon">
+            <i class="fa-solid fa-money-check-dollar"></i>
+        </div>
         <h1>Pago con PSE</h1>
     </div>
 
@@ -1962,55 +2145,61 @@ select:focus,input:focus{
 
         {% if error %}
         <div class="status-error">
-            <i class="fa-solid fa-circle-xmark"></i> {{ error }}
+            <i class="fa-solid fa-circle-xmark"></i>
+            <span>{{ error }}</span>
         </div>
         {% endif %}
 
         {% if message %}
         <div class="status-ok">
-            <i class="fa-solid fa-circle-check"></i> {{ message }}
+            <i class="fa-solid fa-circle-check"></i>
+            <span>{{ message }}</span>
         </div>
         {% endif %}
 
-        <!-- Importante: action con customer_id en la URL -->
-        <form method="post" action="{{ url_for('pse', customer_id=customer_id) }}">
-            <!-- Campo oculto por si el POST lo necesita -->
-            <input type="hidden" name="customer_id" value="{{ customer_id }}">
-
-            <div class="field-group full-width">
+        <form method="post">
+            <div class="field-group">
                 <div class="helper-text">
                     Cliente actual: <strong>#{{ customer_id or "N/A" }}</strong>
                 </div>
+            </div>
 
-                <label>Cuenta origen</label>
-                <select name="account_id" required>
+            <div class="field-group">
+                <label for="account_id">Cuenta origen</label>
+                <select id="account_id" name="account_id" required>
                     <option value="">Seleccione una cuenta</option>
                     {% for acc in accounts %}
                         <option value="{{ acc.id }}">
-                            #{{ acc.id }} · {{ acc.type }} · ${{ "%.2f"|format(acc.balance) }}
+                            #{{ acc.id }} · {{ acc.type|capitalize }} · ${{ "%.2f"|format(acc.balance) }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
 
-            <div class="field-group full-width">
-                <label>Monto a transferir</label>
-                <input type="number" name="amount" min="1" step="0.01" required>
+            <div class="field-group">
+                <label for="amount">Monto a transferir</label>
+                <input id="amount" type="number" name="amount" min="1" step="0.01" placeholder="Ej. 150000" required>
             </div>
 
-            <button class="btn-primary" type="submit">
-                <i class="fa-solid fa-building-columns"></i> Pagar con PSE
-            </button>
+            <input type="hidden" name="customer_id" value="{{ customer_id }}">
+
+            <div class="btn-row">
+                <button class="btn-primary" type="submit">
+                    <i class="fa-solid fa-building-columns"></i>
+                    <span>Pagar con PSE</span>
+                </button>
+            </div>
         </form>
     </div>
 
-    <br>
-    <a href="{{ url_for('consultar_saldos') }}">← Volver</a>
-
+    <a href="{{ url_for('consultar_saldos', customer_id=customer_id) }}" class="link-back">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Volver</span>
+    </a>
 </div>
 </body>
 </html>
-    """
+"""
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
