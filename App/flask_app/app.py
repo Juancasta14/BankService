@@ -790,7 +790,7 @@ consulta_template = """
         id="pseBtn"
         class="btn-transfer"
         data-tooltip="Realizar transferencia con PSE"
-        onclick="window.location.href='{{ url_for('transferencias') }}'">
+        onclick="window.location.href='{{ url_for('pse') }}'">
         <span class="btn-content">
             <i class="fa-solid fa-arrow-right-arrow-left"></i>
             <span>Transferir PSE</span>
