@@ -2244,16 +2244,24 @@ def transferencias():
 
 @app.route("/pse", methods=["GET", "POST"])
 def pse():
-    # 1. Verificar login
     if "token" not in session:
         return redirect(url_for("login"))
 
     token = session["token"]
-    customer_id = request.form.get("customer_id") or session.get("customer_id")
+
+    # 1️⃣ Leer customer_id primero de la query (?customer_id=...)
+    #    luego del formulario (POST) y por último de la sesión
+    customer_id = (
+        request.args.get("customer_id")
+        or request.form.get("customer_id")
+        or session.get("customer_id")
+    )
 
     if not customer_id:
         flash("Primero selecciona un cliente en la pantalla de saldos.")
-        return redirect(url_for("consultar_saldos"))
+        return redirect(url_for("saldos"))
+
+    # Guardar en sesión para siguientes requests
     session["customer_id"] = customer_id
 
     accounts = []
@@ -2261,6 +2269,7 @@ def pse():
     error = None
     message = None
 
+    # 2️⃣ Obtener las cuentas del cliente (solo una vez)
     try:
         resp = requests.get(
             f"{FASTAPI_BASE_URL}/customers/{customer_id}/accounts",
@@ -2274,7 +2283,7 @@ def pse():
     except Exception as e:
         error = f"Error consultando cuentas: {e}"
 
-    # 3. Procesar formulario de pago PSE
+    # 3️⃣ Procesar formulario
     if request.method == "POST":
         account_id = request.form.get("account_id")
         amount = request.form.get("amount")
@@ -2297,7 +2306,7 @@ def pse():
                     ),
                 }
 
-                # (opcional) imprimir en logs para verificar que va el customer_id
+                # Debug para revisar que SÍ va el customer_id
                 print("PSE payload:", data, flush=True)
 
                 resp = requests.post(
