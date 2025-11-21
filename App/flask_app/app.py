@@ -2116,5 +2116,94 @@ def transferencias():
         message=message,
         url_for=url_for,
     )
+
+@app.route("/pse", methods=["GET", "POST"])
+def pse():
+    # Validar login
+    if "token" not in session or "customer_id" not in session:
+        return redirect(url_for("login"))
+
+    customer_id = session["customer_id"]
+    token = session["token"]
+
+    accounts = []
+    payment_url = None
+    error = None
+    message = None
+
+    # Traer cuentas del cliente para el combo
+    try:
+        resp = requests.get(
+            f"{FASTAPI_BASE_URL}/customers/{customer_id}/accounts",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=5,
+        )
+        if resp.status_code == 200:
+            accounts = resp.json()
+        else:
+            error = "No se pudieron cargar las cuentas del cliente."
+    except Exception as e:
+        error = f"Error al consultar cuentas: {e}"
+
+    # Si el usuario envió el formulario, crear el pago PSE
+    if request.method == "POST":
+        account_id = request.form.get("account_id")
+        amount = request.form.get("amount")
+
+        if not account_id or not amount:
+            error = "Debes seleccionar una cuenta y un monto."
+        else:
+            try:
+                data = {
+                    "customer_id": customer_id,
+                    "account_id": int(account_id),
+                    "amount": float(amount),
+                    "currency": "COP",
+                    "return_url_success": url_for(
+                        "pse_result", status="success", _external=True
+                    ),
+                    "return_url_failure": url_for(
+                        "pse_result", status="failure", _external=True
+                    ),
+                }
+
+                resp = requests.post(
+                    f"{FASTAPI_BASE_URL}/payments",
+                    json=data,
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=5,
+                )
+
+                if resp.status_code == 200:
+                    tx = resp.json()
+                    payment_url = tx.get("payment_url")
+                    message = "Orden PSE creada correctamente."
+
+                    # redirigir automáticamente a la URL de pago
+                    if payment_url:
+                        return redirect(payment_url)
+
+                    #   solo mostrar el link en la vista 
+                else:
+                    error = f"Error creando pago PSE (status {resp.status_code})."
+
+            except Exception as e:
+                error = f"Error al crear pago PSE: {e}"
+
+    return render_template(
+        "pse.html",
+        accounts=accounts,
+        payment_url=payment_url,
+        error=error,
+        message=message,
+    )
+
+
+@app.route("/pse/resultado")
+def pse_result():
+    """Pantalla a la que vuelve el usuario después del pago (success / failure)"""
+    status = request.args.get("status", "desconocido")
+    return render_template("pse_result.html", status=status)
+    
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
