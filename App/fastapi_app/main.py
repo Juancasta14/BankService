@@ -380,11 +380,9 @@ def create_pse_payment(
         )
 
 
-
-
 @app.get("/pse-gateway/{internal_order_id}")
 def pse_gateway(internal_order_id: str, db: Session = Depends(get_db)):
-    # Buscar la transacción en la BD
+    # Buscar la transacción
     tx = (
         db.query(PSETransactionDB)
         .filter(PSETransactionDB.internal_order_id == internal_order_id)
@@ -394,20 +392,52 @@ def pse_gateway(internal_order_id: str, db: Session = Depends(get_db)):
     if tx is None:
         raise HTTPException(status_code=404, detail="Transacción no encontrada")
 
-    # Simulación: 90% aprobada, 10% rechazada
-    if random.random() < 0.9:
-        tx.status = "APPROVED"
-        redirect_url = tx.return_url_success
-    else:
-        tx.status = "REJECTED"
-        redirect_url = tx.return_url_failure
+    # Transacción expirada
+    if tx.expires_at < datetime.utcnow():
+        tx.status = "EXPIRED"
+        db.commit()
+        return RedirectResponse(url=tx.return_url_failure)
 
+    # Buscar la cuenta asociada
+    account = (
+        db.query(AccountDB)
+        .filter(AccountDB.id == tx.account_id)
+        .first()
+    )
+
+    if account is None:
+        raise HTTPException(status_code=404, detail="Cuenta de origen no encontrada")
+
+    # ===============================
+    #  SIMULACIÓN: Aprobación PSE
+    #  90% aprobado, 10% rechazado
+    # ===============================
+
+    import random
+    aprobado = random.random() < 0.9   # 90% chance
+
+    if not aprobado:
+        tx.status = "REJECTED"
+        tx.updated_at = datetime.utcnow()
+        db.commit()
+        return RedirectResponse(url=tx.return_url_failure)
+
+    # ===============================
+    #  Descontar saldo
+    # ===============================
+
+    if account.balance < tx.amount:
+        # Saldo insuficiente al momento de pagar
+        tx.status = "REJECTED"
+        tx.updated_at = datetime.utcnow()
+        db.commit()
+        return RedirectResponse(url=tx.return_url_failure)
+
+    # Descontar balance
+    account.balance -= tx.amount
+
+    tx.status = "APPROVED"
     tx.updated_at = datetime.utcnow()
     db.commit()
-
-    return RedirectResponse(url=redirect_url)
-
-    
-@app.get("/")
-def root():
-    return {"message": "FastAPI Bank Service with Auth Running!"}
+    # Redirigir al frontend (Flask)
+    return RedirectResponse(url=tx.return_url_success)
