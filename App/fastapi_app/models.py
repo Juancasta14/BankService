@@ -99,6 +99,18 @@ class PSETransactionDB(Base):
     # Relación opcional con la cuenta
     account = relationship("AccountDB", backref="pse_transactions")
 
+class PSETransferDB(Base):
+    _tablename_ = "pse_transfers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    source_account_id = Column(Integer, nullable=False)
+    destination_bank = Column(String, nullable=False)
+    destination_account = Column(String, nullable=False)
+    amount = Column(Float, nullable=False)
+    description = Column(String, nullable=True)
+    status = Column(String, nullable=False, default="PENDING")  # PENDING, APPROVED, REJECTED
+    created_at = Column(String, nullable=False, default=lambda: datetime.utcnow().isoformat())
+
 # =========================
 #   MODELOS PYDANTIC
 # =========================
@@ -187,6 +199,26 @@ class PSECallbackIn(BaseModel):
     provider_reference: Optional[str] = None
     raw_payload: Optional[dict] = None
 
+class PSETransferCreate(BaseModel):
+    source_account_id: int
+    destination_bank: str
+    destination_account: str
+    amount: float
+    description: str | None = None
+
+
+class PSETransferResponse(BaseModel):
+    id: int
+    source_account_id: int
+    destination_bank: str
+    destination_account: str
+    amount: float
+    description: str | None
+    status: str
+    created_at: str
+
+    class Config:
+        from_attributes = True
 # =========================
 #   HELPERS DE CONSULTA
 # =========================
@@ -221,3 +253,6 @@ def get_movements_by_customer(
         query = query.filter(MovementDB.date <= date_to)
 
     return query.order_by(MovementDB.date.desc(), MovementDB.id.desc()).all()
+
+get_account_by_id(db: Session, account_id: int) -> Optional[AccountDB]:
+    return db.query(AccountDB).filter(AccountDB.id == account_id).first()
