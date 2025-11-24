@@ -99,17 +99,6 @@ class PSETransactionDB(Base):
     # Relación opcional con la cuenta
     account = relationship("AccountDB", backref="pse_transactions")
 
-class PSETransferDB(Base):
-    __tablename__ = "pse_transfers"
-
-    id = Column(Integer, primary_key=True, index=True)
-    source_account_id = Column(Integer, nullable=False)
-    destination_bank = Column(String, nullable=False)
-    destination_account = Column(String, nullable=False)
-    amount = Column(Float, nullable=False)
-    description = Column(String, nullable=True)
-    status = Column(String, nullable=False, default="PENDING")  # PENDING, APPROVED, REJECTED
-    created_at = Column(String, nullable=False, default=lambda: datetime.utcnow().isoformat())
 
 # =========================
 #   MODELOS PYDANTIC
@@ -245,8 +234,6 @@ def get_movements_by_customer(
 
     if account_type:
         query = query.filter(MovementDB.account_type == account_type)
-
-    # asumiendo fechas en formato "YYYY-MM-DD" guardadas como texto
     if date_from:
         query = query.filter(MovementDB.date >= date_from)
     if date_to:
