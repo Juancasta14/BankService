@@ -350,7 +350,7 @@ def pse_callback(data: PSECallbackIn, db: Session = Depends(get_db)):
 
 @app.post("/pse/transfer", response_model=PSETransferResponse)
 def create_pse_transfer(
-    data: PSETransferCreate,
+    data: PSETransactionCreate,
     db: Session = Depends(get_db),
     current_user: UserDB = Depends(get_current_user),
 ):
