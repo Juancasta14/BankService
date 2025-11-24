@@ -100,7 +100,7 @@ class PSETransactionDB(Base):
     account = relationship("AccountDB", backref="pse_transactions")
 
 class PSETransferDB(Base):
-    _tablename_ = "pse_transfers"
+    __tablename__ = "pse_transfers"
 
     id = Column(Integer, primary_key=True, index=True)
     source_account_id = Column(Integer, nullable=False)
