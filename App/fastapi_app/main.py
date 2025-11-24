@@ -15,7 +15,6 @@ from models import (
     WalletDB,
     UserDB,
     MovementDB,
-    PSETransferDB,
     PSETransactionDB,
     PSETransactionCreate,
     PSETransactionOut,
