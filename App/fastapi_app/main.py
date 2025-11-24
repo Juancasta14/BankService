@@ -268,7 +268,7 @@ def create_pse_payment(
 
     # Construimos una URL hacia NUESTRO endpoint de FastAPI
     base_url = str(request.base_url).rstrip("/")
-    payment_url = f"{base_url}/pse-gateway/{internal_order_id}"
+    payment_url = f"{PUBLIC_BASE_URL}/pse-gateway/{internal_order_id}"
 
     tx = PSETransactionDB(
         internal_order_id=internal_order_id,
