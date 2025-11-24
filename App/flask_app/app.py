@@ -2506,11 +2506,13 @@ def pse():
                         else:
                             if resp.status_code == 200:
                                 tx = resp.json()
-                                payment_url = tx.get("payment_url")
+                                internal_order_id = tx.get("internal_order_id")
                                 message = "Orden PSE creada correctamente."
 
                                 # Si el servicio devuelve una URL de pago simulada, redirigimos
-                                if payment_url:
+                                if internal_order_id:
+                                    host = request.host.split(":")[0]
+                                    payment_url = f"http://{host}:8000/pse-gateway/{internal_order_id}"
                                     return redirect(payment_url)
                             else:
                                 try:
