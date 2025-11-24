@@ -261,12 +261,14 @@ def make_transfer(req: TransferRequest, db: Session = Depends(get_db)):
 def create_pse_payment(
     data: PSETransactionCreate,
     db: Session = Depends(get_db),
+    request: Request = None,
 ):
     # ID interno de la orden (para trazabilidad)
     internal_order_id = f"PSE-{uuid4().hex[:20]}"
 
-    # Simulamos una URL de pago que te daría el 3rd party
-    payment_url = f"https://sandbox.pse.fake/pay/{internal_order_id}"
+    # Construimos una URL hacia NUESTRO endpoint de FastAPI
+    base_url = str(request.base_url).rstrip("/")
+    payment_url = f"{base_url}/pse-gateway/{internal_order_id}"
 
     tx = PSETransactionDB(
         internal_order_id=internal_order_id,
@@ -287,7 +289,14 @@ def create_pse_payment(
     db.add(tx)
     db.commit()
     db.refresh(tx)
-    return tx
+
+    # devolvemos la transacción con la payment_url
+    return {
+        "id": tx.id,
+        "internal_order_id": tx.internal_order_id,
+        "payment_url": tx.payment_url,
+        "status": tx.status,
+    }
     
 @app.get("/payments/{internal_order_id}")
 def get_pse_payment(
@@ -302,7 +311,6 @@ def get_pse_payment(
 
     if not tx:
         raise HTTPException(status_code=404, detail="Transacción PSE no encontrada")
-
     return tx
 
 @app.post("/callback")
@@ -386,6 +394,32 @@ def create_pse_transfer(
     db.refresh(transfer)
 
     return transfer
+
+@app.get("/pse-gateway/{internal_order_id}")
+def pse_gateway(internal_order_id: str, db: Session = Depends(get_db)):
+    # Buscar la transacción
+    tx = (
+        db.query(PSETransactionDB)
+        .filter(PSETransactionDB.internal_order_id == internal_order_id)
+        .first()
+    )
+
+    if tx is None:
+        raise HTTPException(status_code=404, detail="Transacción no encontrada")
+
+    # Simulación de aprobación/rechazo
+    if random.random() < 0.9:
+        tx.status = "APPROVED"
+        redirect_url = tx.return_url_success
+    else:
+        tx.status = "REJECTED"
+        redirect_url = tx.return_url_failure
+
+    tx.updated_at = datetime.utcnow()
+    db.commit()
+
+    # Redirige de vuelta al endpoint de Flask
+    return RedirectResponse(url=redirect_url)
     
 @app.get("/")
 def root():
