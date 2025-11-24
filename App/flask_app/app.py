@@ -2174,7 +2174,75 @@ template_pse = """
 </body>
 </html>
 """
+template_pse_result = """
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Resultado pago PSE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+        }
+        .card {
+            max-width: 500px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .status-success {
+            color: #0a8f3a;
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+        .status-failure {
+            color: #c62828;
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            border: none;
+            background-color: #1976d2;
+            color: #fff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
 
+<div class="card">
+    {% if status == "success" %}
+        <p class="status-success">✅ Pago aprobado por PSE</p>
+        <p>Tu pago se ha procesado correctamente.</p>
+    {% elif status == "failure" %}
+        <p class="status-failure">❌ Pago rechazado por PSE</p>
+        <p>No fue posible procesar el pago. Intenta nuevamente o usa otro medio de pago.</p>
+    {% else %}
+        <p class="status-failure">⚠ Resultado desconocido</p>
+        <p>No se recibió un estado válido desde PSE.</p>
+    {% endif %}
+
+    {% if amount and account_id %}
+        <p>Cuenta origen: <strong>#{{ account_id }}</strong></p>
+        <p>Valor: <strong>${{ "%.2f"|format(amount) }}</strong></p>
+    {% endif %}
+
+    <a href="{{ url_for('pse') }}" class="btn">Volver a pagos PSE</a>
+    <br><br>
+    <a href="{{ url_for('saldos') }}">Volver a saldos</a>
+</div>
+
+</body>
+</html>
+"""
 @app.route("/login", methods=["GET", "POST"])
 def login():
     error = None
@@ -2537,9 +2605,16 @@ def pse():
 
 @app.route("/pse/resultado")
 def pse_result():
-    """Pantalla a la que vuelve el usuario después del pago (success / failure)"""
-    status = request.args.get("status", "desconocido")
-    return render_template("pse_result.html", status=status)
+    status = request.args.get("status", "").lower()
+    amount = request.args.get("amount")
+    account_id = request.args.get("account_id")
+
+    return render_template_string(
+        template_pse_result,
+        status=status,
+        amount=amount,
+        account_id=account_id,
+    )
     
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
