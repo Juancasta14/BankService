@@ -2237,7 +2237,7 @@ template_pse_result = """
 
     <a href="{{ url_for('pse') }}" class="btn">Volver a pagos PSE</a>
     <br><br>
-    <a href="{{ url_for('saldos') }}">Volver a saldos</a>
+    <a href="{{ url_for('consultar_saldos') }}">Volver a saldos</a>
 </div>
 
 </body>
