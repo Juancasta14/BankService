@@ -258,16 +258,11 @@ def make_transfer(req: TransferRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error interno al procesar la transferencia: {e}")
 
 @app.post("/payments")
-def create_pse_payment(
-    data: PSETransactionCreate,
-    db: Session = Depends(get_db),
-    request: Request = None,
-):
-    # ID interno de la orden (para trazabilidad)
-    internal_order_id = f"PSE-{uuid4().hex[:20]}"
+def create_pse_payment(data: PSETransactionCreate, request: Request, db: Session = Depends(get_db)):
+    host = request.headers.get("host")  # dinámico
+    PUBLIC_BASE_URL = f"http://{host}"
 
-    # Construimos una URL hacia NUESTRO endpoint de FastAPI
-    base_url = str(request.base_url).rstrip("/")
+    internal_order_id = f"PSE-{uuid4().hex[:20]}"
     payment_url = f"{PUBLIC_BASE_URL}/pse-gateway/{internal_order_id}"
 
     tx = PSETransactionDB(
