@@ -6,6 +6,7 @@ from fastapi import Query
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from uuid import uuid4
+import random
 
 from database import get_db, engine
 from models import (
@@ -14,6 +15,7 @@ from models import (
     WalletDB,
     UserDB,
     MovementDB,
+    PSETransferDB,
     PSETransactionDB,
     PSETransactionCreate,
     PSETransactionOut,
@@ -26,6 +28,7 @@ from models import (
     get_wallet_by_customer,
     get_user_by_username,
     get_movements_by_customer,
+    get_account_by_id,
 )
 from security import verify_password, create_access_token
 
@@ -344,7 +347,45 @@ def pse_callback(data: PSECallbackIn, db: Session = Depends(get_db)):
 
     return {"message": "Callback procesado correctamente", "status": tx.status}
 
+@app.post("/pse/transfer", response_model=PSETransferResponse)
+def create_pse_transfer(
+    data: PSETransferCreate,
+    db: Session = Depends(get_db),
+    current_user: UserDB = Depends(get_current_user),
+):
+    # 1. Verificar que la cuenta origen exista
+    account = get_account_by_id(db, data.source_account_id)
+    if account is None:
+        raise HTTPException(status_code=404, detail="Cuenta origen no encontrada")
 
+    # 2. Verificar saldo suficiente
+    if account.balance < data.amount:
+        raise HTTPException(status_code=400, detail="Saldo insuficiente en la cuenta origen")
+
+    # 3. Simular respuesta de PSE (aprobado / rechazado)
+    # Para simular, aprobamos 90% de las veces:
+    status_simulado = "APPROVED" if random.random() < 0.9 else "REJECTED"
+
+    # 4. Si está aprobada, descontar saldo
+    if status_simulado == "APPROVED":
+        account.balance -= data.amount
+
+    # 5. Guardar registro de la transferencia
+    transfer = PSETransferDB(
+        source_account_id=data.source_account_id,
+        destination_bank=data.destination_bank,
+        destination_account=data.destination_account,
+        amount=data.amount,
+        description=data.description,
+        status=status_simulado,
+    )
+
+    db.add(transfer)
+    db.commit()
+    db.refresh(transfer)
+
+    return transfer
+    
 @app.get("/")
 def root():
     return {"message": "FastAPI Bank Service with Auth Running!"}
