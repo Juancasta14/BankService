@@ -258,40 +258,54 @@ def make_transfer(req: TransferRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error interno al procesar la transferencia: {e}")
 
 @app.post("/payments")
-def create_pse_payment(data: PSETransactionCreate, request: Request, db: Session = Depends(get_db)):
-    host = request.headers.get("host")  # dinámico
-    PUBLIC_BASE_URL = f"http://{host}"
+def create_pse_payment(
+    data: PSETransactionCreate,
+    db: Session = Depends(get_db),
+):
+    """
+    Crea una orden PSE en estado PENDING.
+    No devuelve la URL completa, solo el internal_order_id.
+    Flask construirá la URL externa usando el host actual.
+    """
+    try:
+        internal_order_id = f"PSE-{uuid4().hex[:20]}"
 
-    internal_order_id = f"PSE-{uuid4().hex[:20]}"
-    payment_url = f"{PUBLIC_BASE_URL}/pse-gateway/{internal_order_id}"
+        tx = PSETransactionDB(
+            internal_order_id=internal_order_id,
+            customer_id=data.customer_id,
+            account_id=data.account_id,
+            amount=data.amount,
+            currency=data.currency,
+            status="PENDING",
+            provider="PSE",
+            # la URL que guardamos es opcional, pero útil para trazabilidad
+            payment_url="",  # la puede rellenar Flask si quieres
+            return_url_success=data.return_url_success,
+            return_url_failure=data.return_url_failure,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+            expires_at=datetime.utcnow() + timedelta(minutes=15),
+        )
 
-    tx = PSETransactionDB(
-        internal_order_id=internal_order_id,
-        customer_id=data.customer_id,
-        account_id=data.account_id,
-        amount=data.amount,
-        currency=data.currency,
-        status="PENDING",
-        provider="PSE",
-        payment_url=payment_url,
-        return_url_success=data.return_url_success,
-        return_url_failure=data.return_url_failure,
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
-        expires_at=datetime.utcnow() + timedelta(minutes=15),
-    )
+        db.add(tx)
+        db.commit()
+        db.refresh(tx)
 
-    db.add(tx)
-    db.commit()
-    db.refresh(tx)
+        # devolvemos solo lo necesario
+        return {
+            "id": tx.id,
+            "internal_order_id": tx.internal_order_id,
+            "status": tx.status,
+        }
 
-    # devolvemos la transacción con la payment_url
-    return {
-        "id": tx.id,
-        "internal_order_id": tx.internal_order_id,
-        "payment_url": tx.payment_url,
-        "status": tx.status,
-    }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno al crear la orden PSE: {e}",
+        )
+
+
     
 @app.get("/payments/{internal_order_id}")
 def get_pse_payment(
@@ -392,7 +406,7 @@ def create_pse_transfer(
 
 @app.get("/pse-gateway/{internal_order_id}")
 def pse_gateway(internal_order_id: str, db: Session = Depends(get_db)):
-    # Buscar la transacción
+
     tx = (
         db.query(PSETransactionDB)
         .filter(PSETransactionDB.internal_order_id == internal_order_id)
@@ -402,7 +416,7 @@ def pse_gateway(internal_order_id: str, db: Session = Depends(get_db)):
     if tx is None:
         raise HTTPException(status_code=404, detail="Transacción no encontrada")
 
-    # Simulación de aprobación/rechazo
+    # Simulación: 90% aprobado, 10% rechazado
     if random.random() < 0.9:
         tx.status = "APPROVED"
         redirect_url = tx.return_url_success
@@ -413,7 +427,6 @@ def pse_gateway(internal_order_id: str, db: Session = Depends(get_db)):
     tx.updated_at = datetime.utcnow()
     db.commit()
 
-    # Redirige de vuelta al endpoint de Flask
     return RedirectResponse(url=redirect_url)
     
 @app.get("/")
