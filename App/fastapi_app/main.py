@@ -400,6 +400,7 @@ def create_pse_payment(
 
 @app.get("/pse-gateway/{internal_order_id}")
 def pse_gateway(internal_order_id: str, db: Session = Depends(get_db)):
+    # Buscar la transacción en la BD
     tx = (
         db.query(PSETransactionDB)
         .filter(PSETransactionDB.internal_order_id == internal_order_id)
@@ -408,6 +409,8 @@ def pse_gateway(internal_order_id: str, db: Session = Depends(get_db)):
 
     if tx is None:
         raise HTTPException(status_code=404, detail="Transacción no encontrada")
+
+    # Simulación: 90% aprobada, 10% rechazada
     if random.random() < 0.9:
         tx.status = "APPROVED"
         redirect_url = tx.return_url_success
