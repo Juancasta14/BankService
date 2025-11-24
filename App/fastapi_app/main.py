@@ -6,6 +6,7 @@ from fastapi import Query
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from uuid import uuid4
+from fastapi.responses import RedirectResponse
 import random
 
 from database import get_db, engine
