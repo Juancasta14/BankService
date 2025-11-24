@@ -2230,7 +2230,7 @@ template_pse_result = """
         <p>No se recibió un estado válido desde PSE.</p>
     {% endif %}
 
-    {% if amount and account_id %}
+    {% if amount is not none and account_id %}
         <p>Cuenta origen: <strong>#{{ account_id }}</strong></p>
         <p>Valor: <strong>${{ "%.2f"|format(amount) }}</strong></p>
     {% endif %}
@@ -2615,14 +2615,20 @@ def pse():
 
 @app.route("/pse/resultado")
 def pse_result():
-    status = request.args.get("status", "").lower()
+    status = (request.args.get("status") or "").lower()
     amount = request.args.get("amount")
     account_id = request.args.get("account_id")
+    amount_value = None
+    try:
+        if amount is not None:
+            amount_value = float(amount)
+    except ValueError:
+        amount_value = None
 
     return render_template_string(
         template_pse_result,
         status=status,
-        amount=amount,
+        amount=amount_value,
         account_id=account_id,
     )
     
