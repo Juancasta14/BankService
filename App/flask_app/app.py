@@ -2550,17 +2550,27 @@ def pse():
                         # ==========================
                         # 3. Crear orden PSE en FastAPI
                         # ==========================
+                        return_url_success = url_for(
+                            "pse_result",
+                            status="success",
+                            amount=amount_f,
+                            account_id=account_id,
+                            _external=True,
+                        )
+                        return_url_failure = url_for(
+                            "pse_result",
+                            status="failure",
+                            amount=amount_f,
+                            account_id=account_id,
+                            _external=True,
+                        )
                         data = {
                             "customer_id": int(customer_id),
                             "account_id": int(account_id),
                             "amount": amount_f,
                             "currency": "COP",
-                            "return_url_success": url_for(
-                                "pse_result", status="success", _external=True
-                            ),
-                            "return_url_failure": url_for(
-                                "pse_result", status="failure", _external=True
-                            ),
+                            "return_url_success": return_url_success,
+                            "return_url_failure": return_url_failure,
                         }
 
                         try:
