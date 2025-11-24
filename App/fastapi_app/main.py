@@ -315,52 +315,34 @@ def pse_callback(data: PSECallbackIn, db: Session = Depends(get_db)):
 
     return {"message": "Callback procesado correctamente", "status": tx.status}
 
-@app.post("/pse/transfer", response_model=PSETransferResponse)
-def create_pse_transfer(
-    data: PSETransactionCreate,
-    db: Session = Depends(get_db),
-    current_user: UserDB = Depends(get_current_user),
-):
-    # 1. Verificar que la cuenta origen exista
-    account = get_account_by_id(db, data.source_account_id)
-    if account is None:
-        raise HTTPException(status_code=404, detail="Cuenta origen no encontrada")
-
-    # 2. Verificar saldo suficiente
-    if account.balance < data.amount:
-        raise HTTPException(status_code=400, detail="Saldo insuficiente en la cuenta origen")
-
-    # 3. Simular respuesta de PSE (aprobado / rechazado)
-    # Para simular, aprobamos 90% de las veces:
-    status_simulado = "APPROVED" if random.random() < 0.9 else "REJECTED"
-
-    # 4. Si está aprobada, descontar saldo
-    if status_simulado == "APPROVED":
-        account.balance -= data.amount
-
-    # 5. Guardar registro de la transferencia
-    transfer = PSETransferDB(
-        source_account_id=data.source_account_id,
-        destination_bank=data.destination_bank,
-        destination_account=data.destination_account,
-        amount=data.amount,
-        description=data.description,
-        status=status_simulado,
-    )
-
-    db.add(transfer)
-    db.commit()
-    db.refresh(transfer)
-
-    return transfer
-
-
 @app.post("/payments")
 def create_pse_payment(
     data: PSETransactionCreate,
     db: Session = Depends(get_db),
 ):
+    # 1. Obtener la cuenta de origen
+    account = (
+        db.query(AccountDB)
+        .filter(AccountDB.id == data.account_id)
+        .first()
+    )
 
+    if account is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Cuenta de origen no encontrada",
+        )
+    # 3. Validar saldo suficiente
+    if account.balance < data.amount:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Saldo insuficiente en la cuenta #{account.id}. "
+                f"Saldo disponible: {account.balance:.2f}"
+            ),
+        )
+
+    # 4. Crear la orden PSE
     try:
         internal_order_id = f"PSE-{uuid4().hex[:20]}"
 
@@ -372,8 +354,7 @@ def create_pse_payment(
             currency=data.currency,
             status="PENDING",
             provider="PSE",
-            # la URL que guardamos es opcional, pero útil para trazabilidad
-            payment_url="",  # la puede rellenar Flask si quieres
+            payment_url="",  # Flask puede construir la URL externa
             return_url_success=data.return_url_success,
             return_url_failure=data.return_url_failure,
             created_at=datetime.utcnow(),
@@ -384,7 +365,7 @@ def create_pse_payment(
         db.add(tx)
         db.commit()
         db.refresh(tx)
-        
+
         return {
             "id": tx.id,
             "internal_order_id": tx.internal_order_id,
@@ -397,6 +378,9 @@ def create_pse_payment(
             status_code=500,
             detail=f"Error interno al crear la orden PSE: {e}",
         )
+
+
+
 
 @app.get("/pse-gateway/{internal_order_id}")
 def pse_gateway(internal_order_id: str, db: Session = Depends(get_db)):
