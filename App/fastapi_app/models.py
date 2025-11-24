@@ -1,4 +1,4 @@
-# fastapi_app/models.py
+ # fastapi_app/models.py
 
 from typing import List, Optional
 
@@ -254,5 +254,5 @@ def get_movements_by_customer(
 
     return query.order_by(MovementDB.date.desc(), MovementDB.id.desc()).all()
 
-get_account_by_id(db: Session, account_id: int) -> Optional[AccountDB]:
+def get_account_by_id(db: Session, account_id: int) -> Optional[AccountDB]:
     return db.query(AccountDB).filter(AccountDB.id == account_id).first()
