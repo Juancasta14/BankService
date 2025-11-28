@@ -2258,9 +2258,19 @@ def login():
             )
             if resp.status_code == 200:
                 data = resp.json()
+
                 session["token"] = data["access_token"]
                 session["username"] = data["username"]
-                return redirect(url_for("consultar_saldos"))
+                session["user_id"] = data.get("user_id")
+                user_id = int(session["user_id"])
+
+                if user_id == 1:
+                    return redirect(url_for("consultar_saldos"))
+                elif user_id == 2:
+                    return redirect(url_for("pse"))
+                else:
+                    return redirect(url_for("login"))
+
             else:
                 try:
                     error = resp.json().get("detail", "Credenciales inválidas")
