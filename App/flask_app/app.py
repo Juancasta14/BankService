@@ -2174,6 +2174,280 @@ template_pse = """
 </body>
 </html>
 """
+
+
+template_pse_pse = """
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pago con PSE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg: #eef3ff;
+            --card-bg: #f9fbff;
+            --card-border: #d7e3ff;
+            --accent: #2563eb;
+            --accent-soft: #e0ecff;
+            --accent-strong: #1d4ed8;
+            --text-main: #0f172a;
+            --text-soft: #64748b;
+            --error-bg: #fee2e2;
+            --error-text: #b91c1c;
+            --success-bg: #dcfce7;
+            --success-text: #15803d;
+            --input-bg: #f5f7ff;
+            --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.10);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top left, #e0ebff 0, #eef3ff 35%, #f5f7ff 100%);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+        }
+
+        .page {
+            width: min(1040px, 100% - 48px);
+            margin: 32px auto;
+        }
+
+        .title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .title-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            box-shadow: 0 12px 30px rgba(37, 99, 235, 0.45);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 26px;
+            padding: 28px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 26px;
+        }
+
+        .field-group {
+            margin-bottom: 22px;
+        }
+
+        .field-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-soft);
+            margin-bottom: 6px;
+        }
+
+        select,
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 999px;
+            border: 1px solid #d0ddff;
+            background: var(--input-bg);
+            font-size: 14px;
+            outline: none;
+        }
+
+        select:focus,
+        input[type="number"]:focus {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+        }
+
+        .btn-primary {
+            border-radius: 999px;
+            padding: 11px 26px;
+            border: none;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 14px 32px rgba(37, 99, 235, 0.45);
+        }
+
+        .summary-card {
+            margin-top: 8px;
+            padding: 20px;
+            border: 1px solid var(--card-border);
+            background: #ffffffcc;
+            border-radius: 22px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+            display: none;
+        }
+
+        .summary-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--accent-strong);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .link-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent-strong);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .status-error {
+    background: var(--error-bg);
+    color: var(--error-text);
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+    </style>
+</head>
+
+<body>
+<div class="page">
+
+    <div class="title-wrap">
+        <div class="title-icon"><i class="fa-solid fa-money-check-dollar"></i></div>
+        <h1>Pago con PSE</h1>
+    </div>
+
+    <div class="card">
+        <form method="post">
+            <div class="helper-text">Cliente actual: <strong>#{{ customer_id }}</strong></div>
+
+            <div class="field-group">
+                <label>Cuenta origen</label>
+                <select name="account_id" id="accountSelect" required>
+                    <option value="">Seleccione una cuenta</option>
+                    {% for acc in accounts %}
+                    <option value="{{ acc.id }}" data-type="{{ acc.type }}" data-balance="{{ acc.balance }}">
+                        #{{ acc.id }} · {{ acc.type }} · ${{ "%.2f"|format(acc.balance) }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label>Monto a transferir</label>
+                <input type="number" min="1" step="0.01" name="amount" id="amountInput" required>
+                    <div id="balanceError" class="status-error" style="display:none; margin-top:8px;">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        Saldo insuficiente para realizar este pago.
+    </div>
+            </div>
+
+            <input type="hidden" name="customer_id" value="{{ customer_id }}">
+
+            <!-- Resumen dinámico -->
+            <div class="summary-card" id="summaryCard">
+                <div class="summary-title"><i class="fa-solid fa-receipt"></i> Resumen del pago</div>
+
+                <div class="summary-row"><span>Cuenta origen:</span> <strong id="sumAccount"></strong></div>
+                <div class="summary-row"><span>Tipo de cuenta:</span> <strong id="sumType"></strong></div>
+                <div class="summary-row"><span>Saldo disponible:</span> <strong id="sumBalance"></strong></div>
+                <div class="summary-row"><span>Monto a pagar:</span> <strong id="sumAmount"></strong></div>
+                <div class="summary-row"><span>Moneda:</span> <strong>COP</strong></div>
+            </div>
+
+            <br>
+
+            <button type="submit" class="btn-primary">
+                <i class="fa-solid fa-building-columns"></i>
+                Pagar con PSE
+            </button>
+        </form>
+    </div>
+
+    <a class="link-back" href="{{ url_for('login') }}">
+        <i class="fa-solid fa-arrow-left"></i> Cancelar
+    </a>
+
+</div>
+
+
+<script>
+    const sel = document.getElementById("accountSelect");
+    const amt = document.getElementById("amountInput");
+    const card = document.getElementById("summaryCard");
+    const balanceError = document.getElementById("balanceError");
+    const submitBtn = document.querySelector(".btn-primary");
+
+    function updateSummary() {
+        let account = sel.options[sel.selectedIndex];
+        let amount = parseFloat(amt.value || "0");
+        let hasAccount = !!account.value;
+
+        // Ocultar todo por defecto
+        card.style.display = "none";
+        balanceError.style.display = "none";
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = "1";
+
+        if (!hasAccount || amount <= 0) {
+            return;
+        }
+
+        let balance = parseFloat(account.dataset.balance || "0");
+
+        // Actualizar resumen
+        document.getElementById("sumAccount").innerText = "#" + account.value;
+        document.getElementById("sumType").innerText = account.dataset.type;
+        document.getElementById("sumBalance").innerText = "$" + balance.toFixed(2);
+        document.getElementById("sumAmount").innerText = "$" + amount.toFixed(2);
+        card.style.display = "block";
+
+    
+        if (amount > balance) {
+            balanceError.style.display = "flex";
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = "0.6";
+        }
+    }
+
+    sel.addEventListener("change", updateSummary);
+    amt.addEventListener("input", updateSummary);
+</script>
+
+</body>
+</html>
+"""
 template_pse_result = """
 <!doctype html>
 <html lang="es">
@@ -2746,7 +3020,7 @@ def pse_pse():
                                 )
 
     return render_template_string(
-        template_pse,         
+        template_pse_pse,         
         accounts=accounts,
         customer_id=customer_id,
         error=error,
