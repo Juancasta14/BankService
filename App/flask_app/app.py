@@ -3099,7 +3099,7 @@ def pse_pse():
 
 
 @app.route("/pse_pse/resultado")
-def pse_result():
+def pse_pse_result():
     status = (request.args.get("status") or "").lower()
     amount = request.args.get("amount")
     account_id = request.args.get("account_id")
