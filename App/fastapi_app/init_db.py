@@ -13,18 +13,37 @@ def init():
 
     db: Session = SessionLocal()
     try:
-        # -------- Usuario por defecto --------
+        # -------- Usuarios por defecto --------
         print("== Revisando usuarios ==")
-        user = db.query(UserDB).first()
-        if not user:
-            new_user = UserDB(
+        existing_users = db.query(UserDB).all()
+        if not existing_users:
+            admin_user = UserDB(
                 username="admin",
-                hashed_password=hash_password("password123"),
+                hashed_password=hash_password("admin123"),
             )
-            db.add(new_user)
-            print("Usuario creado: admin / password123")
+            normal_user = UserDB(
+                username="user",
+                hashed_password=hash_password("user123"),
+            )
+            db.add_all([admin_user, normal_user])
+            print("Usuarios creados:")
+            print(" - admin / password123")
+            print(" - user / user123")
         else:
-            print("Ya existe al menos un usuario, no se crea otro.")
+            user_user = (
+                db.query(UserDB)
+                .filter(UserDB.username == "user")
+                .first()
+            )
+            if not user_user:
+                user_user = UserDB(
+                    username="user",
+                    hashed_password=hash_password("user123"),
+                )
+                db.add(user_user)
+                print("Usuario adicional creado: user / user123")
+            else:
+                print("Ya existe al menos un usuario, no se crean nuevos.")
 
         # -------- Cuentas y billeteras --------
         print("== Revisando cuentas ==")
