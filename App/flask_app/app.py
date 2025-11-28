@@ -2624,8 +2624,7 @@ def pse():
 
 
 @app.route("/pse_pse", methods=["GET", "POST"])
-def pse():
-    # Usuario no autenticado → mandar al login
+def pse_pse():
     if "token" not in session:
         return redirect(url_for("login"))
     customer_id = 100
