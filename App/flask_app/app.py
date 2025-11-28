@@ -2267,7 +2267,7 @@ def login():
                 if user_id == 1:
                     return redirect(url_for("consultar_saldos"))
                 elif user_id == 2:
-                    return redirect(url_for("pse"))
+                    return redirect(url_for("pse?customer_id=100"))
                 else:
                     return redirect(url_for("login"))
 
