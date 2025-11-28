@@ -2517,6 +2517,74 @@ template_pse_result = """
 </body>
 </html>
 """
+
+template_pse_pse_result = """
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Resultado pago PSE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+        }
+        .card {
+            max-width: 500px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .status-success {
+            color: #0a8f3a;
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+        .status-failure {
+            color: #c62828;
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            border: none;
+            background-color: #1976d2;
+            color: #fff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    {% if status == "success" %}
+        <p class="status-success">✅ Pago aprobado por PSE</p>
+        <p>Tu pago se ha procesado correctamente.</p>
+    {% elif status == "failure" %}
+        <p class="status-failure">❌ Pago rechazado por PSE</p>
+        <p>No fue posible procesar el pago. Intenta nuevamente o usa otro medio de pago.</p>
+    {% else %}
+        <p class="status-failure">⚠ Resultado desconocido</p>
+        <p>No se recibió un estado válido desde PSE.</p>
+    {% endif %}
+
+    {% if amount is not none and account_id %}
+        <p>Cuenta origen: <strong>#{{ account_id }}</strong></p>
+        <p>Valor: <strong>${{ "%.2f"|format(amount) }}</strong></p>
+    {% endif %}
+
+    <a href="{{ url_for('login') }}" class="btn">Finalizar</a>
+</div>
+
+</body>
+</html>
+"""
 @app.route("/login", methods=["GET", "POST"])
 def login():
     error = None
@@ -2967,14 +3035,14 @@ def pse_pse():
                         # 3. Crear orden PSE en FastAPI
                         # ==========================
                         return_url_success = url_for(
-                            "pse_result",
+                            "pse_pse_result",
                             status="success",
                             amount=amount_f,
                             account_id=account_id,
                             _external=True,
                         )
                         return_url_failure = url_for(
-                            "pse_result",
+                            "pse_pse_result",
                             status="failure",
                             amount=amount_f,
                             account_id=account_id,
@@ -3029,6 +3097,25 @@ def pse_pse():
     )
 
 
+
+@app.route("/pse_pse/resultado")
+def pse_result():
+    status = (request.args.get("status") or "").lower()
+    amount = request.args.get("amount")
+    account_id = request.args.get("account_id")
+    amount_value = None
+    try:
+        if amount is not None:
+            amount_value = float(amount)
+    except ValueError:
+        amount_value = None
+
+    return render_template_string(
+        template_pse_pse_result,
+        status=status,
+        amount=amount_value,
+        account_id=account_id,
+    )
 
 
 @app.route("/pse/resultado")
