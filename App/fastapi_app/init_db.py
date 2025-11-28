@@ -27,7 +27,7 @@ def init():
             )
             db.add_all([admin_user, normal_user])
             print("Usuarios creados:")
-            print(" - admin / password123")
+            print(" - admin / admin123")
             print(" - user / user123")
         else:
             user_user = (
