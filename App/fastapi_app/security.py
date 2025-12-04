@@ -6,12 +6,9 @@ from typing import Optional
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 
-# OJO: cambia esto en producción por algo largo y secreto
 SECRET_KEY = "Juan_Cristian_Jorge"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
-
-# Usamos pbkdf2_sha256 para evitar problemas con bcrypt
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 
