@@ -5,7 +5,7 @@ import os
 
 app = Flask(__name__)
 
-# Clave para la sesión de Flask (cámbiala en producción)
+# Clave para la sesión de Flask
 app.secret_key = "Juan_Cristian_Jorge"
 
 FASTAPI_BASE_URL = os.getenv("FASTAPI_BASE_URL", "http://banco_fastapi:8000")
@@ -643,27 +643,26 @@ consulta_template = """
             align-items: center;
             gap: 6px;
         }
-/* Botón Transferir — versión compacta */
 .btn-transfer {
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 10px 18px;             /* MUCHÍSIMO MÁS COMPACTO */
+    padding: 10px 18px;             
     border-radius: 999px;
     border: none;
     background: linear-gradient(135deg, #4c8dff 0%, #355adf 100%);
     color: white;
-    font-size: 0.9rem;              /* Reducido */
+    font-size: 0.9rem;             
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 6px 14px rgba(53, 90, 223, 0.25);  /* Sombra más pequeña */
+    box-shadow: 0 6px 14px rgba(53, 90, 223, 0.25);
     transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
 }
 
 .btn-transfer i {
-    font-size: 1rem;                /* Icono más pequeño */
+    font-size: 1rem;               
 }
 
 .btn-transfer:hover {
@@ -918,7 +917,6 @@ movimientos_template = """
     <title>Historial de Movimientos - Banco Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Font Awesome -->
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -2699,7 +2697,6 @@ def historial_movimientos():
         error = "Debes indicar un ID de cliente."
     else:
         try:
-            # Construir parámetros de consulta (ajusta a tu API real)
             params = {}
             if account_filter:
                 params["account_type"] = account_filter
