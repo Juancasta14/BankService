@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from application.banking.ports.outbound.movement_repository import MovementRepository
+from application.pse.ports.outbound.movement_repository import MovementRepository
 from adapters.outbound.persistence.sqlalchemy.models import MovementDB
 
 
