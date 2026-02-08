@@ -1,4 +1,4 @@
-from fastapi_app.application.auth.ports.token_service import TokenService
+from application.auth.ports.token_service import TokenService
 from security import create_access_token, decode_token  
 
 class JwtTokenService(TokenService):

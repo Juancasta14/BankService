@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from fastapi_app.adapters.outbound.persistence.sqlalchemy.models import AccountDB
+from adapters.outbound.persistence.sqlalchemy.models import AccountDB
 
 class AccountsRepositorySqlAlchemy:
     def __init__(self, db: Session):

@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 
-from fastapi_app.adapters.outbound.persistence.sqlalchemy.unit_of_work_sqlalchemy import SqlAlchemyUnitOfWork
-from fastapi_app.application.banking.services.transfer_service import TransferService
-from fastapi_app..adapters.inbound.http.dto.transfer_dto import TransferRequest
+from adapters.outbound.persistence.sqlalchemy.unit_of_work_sqlalchemy import SqlAlchemyUnitOfWork
+from application.banking.services.transfer_service import TransferService
+from adapters.inbound.http.dto.transfer_dto import TransferRequest
 
-from fastapi_app..domain.banking.exceptions import (
+from domain.banking.exceptions import (
     InvalidAmount, SameAccount, AccountNotFound, InsufficientFunds
 )
 

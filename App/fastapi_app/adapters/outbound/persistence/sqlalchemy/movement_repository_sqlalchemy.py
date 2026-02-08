@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from fastapi_app.application.banking.ports.outbound.movement_repository import MovementRepository
-from fastapi_app.adapters.outbound.persistence.sqlalchemy.models import MovementDB
+from application.banking.ports.outbound.movement_repository import MovementRepository
+from adapters.outbound.persistence.sqlalchemy.models import MovementDB
 
 
 class MovementRepositorySqlAlchemy(MovementRepository):

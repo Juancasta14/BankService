@@ -1,4 +1,4 @@
-from fastapi_app.application.auth.ports.password_hasher import PasswordHasher
+from application.auth.ports.password_hasher import PasswordHasher
 from security import verify_password
 
 class BcryptPasswordHasher(PasswordHasher):

@@ -1,6 +1,6 @@
 import json
 from sqlalchemy.orm import Session
-from fastapi_app.adapters.outbound.persistence.sqlalchemy.models import PSETransactionDB
+from adapters.outbound.persistence.sqlalchemy.models import PSETransactionDB
 
 
 

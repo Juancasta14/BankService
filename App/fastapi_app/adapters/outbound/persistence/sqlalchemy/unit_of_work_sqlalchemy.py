@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from fastapi_app.application.banking.ports.outbound.unit_of_work import UnitOfWork
+from application.banking.ports.outbound.unit_of_work import UnitOfWork
 from .account_repository_sqlalchemy import AccountRepositorySqlAlchemy
 from .movement_repository_sqlalchemy import MovementRepositorySqlAlchemy
 from .pse_transaction_repository_sqlalchemy import PSETransactionRepositorySqlAlchemy

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from fastapi_app.domain.auth.exceptions import Unauthorized
-from fastapi_app.application.auth.ports.user_repository import UserRepository
-from fastapi_app.application.auth.ports.token_service import TokenService
+from domain.auth.exceptions import Unauthorized
+from application.auth.ports.user_repository import UserRepository
+from application.auth.ports.token_service import TokenService
 
 @dataclass
 class AuthenticateService:
