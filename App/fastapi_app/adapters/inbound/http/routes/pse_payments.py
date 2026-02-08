@@ -4,7 +4,8 @@ from database import get_db
 
 from adapters.outbound.persistence.sqlalchemy.unit_of_work_pse_sqlalchemy import SqlAlchemyPSEUnitOfWork
 from application.pse.services.create_payment_service import CreatePSEPaymentService
-from fastapi.adapters.inbound.http.dto import PSETransactionCreate
+from adapters.inbound.http.dto.pse_dto import PSETransactionCreate
+
 
 
 

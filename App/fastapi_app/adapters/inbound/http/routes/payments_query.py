@@ -3,15 +3,19 @@ from sqlalchemy.orm import Session
 from database import get_db
 
 from adapters.outbound.persistence.sqlalchemy.unit_of_work_pse_sqlalchemy import SqlAlchemyPSEUnitOfWork
+from application.pse.services.get_payment_service import GetPSEPaymentService
+from adapters.inbound.http.dto.pse_dto import PSETransactionOut
 
 router = APIRouter(tags=["payments"])
 
-def get_uow(db: Session = Depends(get_db)) -> SqlAlchemyPSEUnitOfWork:
-    return SqlAlchemyPSEUnitOfWork(db)
+def get_service(db: Session = Depends(get_db)) -> GetPSEPaymentService:
+    return GetPSEPaymentService(uow=SqlAlchemyPSEUnitOfWork(db))
 
 @router.get("/payments/{internal_order_id}")
-def get_payment(internal_order_id: str, uow: SqlAlchemyPSEUnitOfWork = Depends(get_uow)):
-    tx = uow.pse.get_by_internal_order_id(internal_order_id)
-    if not tx:
-        raise HTTPException(status_code=404, detail="Transacción PSE no encontrada")
-    return tx
+def get_payment(internal_order_id: str, svc: GetPSEPaymentService = Depends(get_service)):
+    try:
+        tx = svc.get(internal_order_id)
+        return PSETransactionOut.model_validate(tx)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+

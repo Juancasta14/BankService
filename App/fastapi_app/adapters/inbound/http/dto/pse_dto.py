@@ -1,3 +1,8 @@
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+
 class PSETransactionCreate(BaseModel):
     customer_id: int
     account_id: int
@@ -6,6 +11,7 @@ class PSETransactionCreate(BaseModel):
     return_url_success: Optional[str] = None
     return_url_failure: Optional[str] = None
     metadata: Optional[dict] = None
+
 
 class PSETransactionOut(BaseModel):
     id: int
@@ -24,14 +30,16 @@ class PSETransactionOut(BaseModel):
     expires_at: Optional[datetime] = None
 
     class Config:
-        from_attributes = True  
+        from_attributes = True
+
 
 class PSECallbackIn(BaseModel):
     internal_order_id: str
-    status: str                    
+    status: str
     provider_tx_id: Optional[str] = None
     provider_reference: Optional[str] = None
     raw_payload: Optional[dict] = None
+
 
 class PSETransferCreate(BaseModel):
     source_account_id: int
