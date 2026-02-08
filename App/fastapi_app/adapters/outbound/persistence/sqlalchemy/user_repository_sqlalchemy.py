@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from application.auth.ports.user_repository import UserRepository
 from domain.auth.user import User
-from models import UserDB
+from adapters.outbound.persistence.sqlalchemy.models import UserDB
 
 class UserRepositorySqlAlchemy(UserRepository):
     def __init__(self, db: Session):
