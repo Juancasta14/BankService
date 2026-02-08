@@ -19,7 +19,11 @@ def get_transfer_service(db: Session = Depends(get_db)) -> TransferService:
 @router.post("/customers/{customer_id}/transfer")
 def make_transfer(customer_id: int, req: TransferRequest, svc: TransferService = Depends(get_transfer_service)):
     try:
-        svc.transfer(req.from_account_id, req.to_account_id, req.amount)
+        svc.transfer(
+            from_account_id=req.from_account_id,
+            to_account_id=req.to_account_id,
+            amount=req.amount,
+        )
         return {"message": "Transferencia realizada correctamente"}
     except (InvalidAmount, SameAccount) as e:
         raise HTTPException(status_code=400, detail=str(e))
