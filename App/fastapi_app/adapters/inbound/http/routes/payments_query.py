@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 
-from adapters.outbound.persistence.sqlalchemy.unit_of_work_pse_sqlalchemy import SqlAlchemyPSEUnitOfWork
-from application.pse.services.get_payment_service import GetPSEPaymentService
-from adapters.inbound.http.dto.pse_dto import PSETransactionOut
+from fastapi_app.adapters.outbound.persistence.sqlalchemy.unit_of_work_pse_sqlalchemy import SqlAlchemyPSEUnitOfWork
+from fastapi_app.application.pse.services.get_payment_service import GetPSEPaymentService
+from fastapi_app.adapters.inbound.http.dto.pse_dto import PSETransactionOut
 
 router = APIRouter(tags=["payments"])
 

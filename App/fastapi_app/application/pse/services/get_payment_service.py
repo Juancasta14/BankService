@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from application.pse.ports.outbound.unit_of_work import UnitOfWork
+from fastapi_app.application.pse.ports.outbound.unit_of_work import UnitOfWork
 
 @dataclass
 class GetPSEPaymentService:

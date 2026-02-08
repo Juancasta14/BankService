@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-from bankservice.domain.auth.exceptions import InvalidCredentials
-from bankservice.application.auth.ports.user_repository import UserRepository
-from bankservice.application.auth.ports.password_hasher import PasswordHasher
-from bankservice.application.auth.ports.token_service import TokenService
+from fastapi_app.domain.auth.exceptions import InvalidCredentials
+from fastapi_app.application.auth.ports.user_repository import UserRepository
+from fastapi_app.application.auth.ports.password_hasher import PasswordHasher
+from fastapi_app.application.auth.ports.token_service import TokenService
 
 @dataclass
 class LoginService:

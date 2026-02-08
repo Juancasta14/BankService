@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from bankservice.application.auth.ports.user_repository import UserRepository
-from bankservice.domain.auth.user import User
+from fastapi_app.application.auth.ports.user_repository import UserRepository
+from fastapi_app.domain.auth.user import User
 from models import UserDB
 
 class UserRepositorySqlAlchemy(UserRepository):

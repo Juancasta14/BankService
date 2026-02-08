@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from adapters.outbound.persistence.sqlalchemy.models import WalletDB
+from fastapi_app.adapters.outbound.persistence.sqlalchemy.models import WalletDB
 
 class WalletsRepositorySqlAlchemy:
     def __init__(self, db: Session):

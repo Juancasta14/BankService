@@ -3,10 +3,10 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from database import get_db
 
-from bankservice.adapters.outbound.persistence.sqlalchemy.user_repository_sqlalchemy import UserRepositorySqlAlchemy
-from bankservice.adapters.outbound.security.jwt_token_service import JwtTokenService
-from bankservice.application.auth.services.authenticate_service import AuthenticateService
-from bankservice.domain.auth.exceptions import Unauthorized
+from fastapi_app.adapters.outbound.persistence.sqlalchemy.user_repository_sqlalchemy import UserRepositorySqlAlchemy
+from fastapi_app.adapters.outbound.security.jwt_token_service import JwtTokenService
+from fastapi_app.application.auth.services.authenticate_service import AuthenticateService
+from fastapi_app.domain.auth.exceptions import Unauthorized
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 

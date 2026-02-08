@@ -3,11 +3,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from database import get_db
 
-from adapters.outbound.persistence.sqlalchemy.user_repository_sqlalchemy import UserRepositorySqlAlchemy
-from adapters.outbound.security.jwt_token_service import JwtTokenService
-from adapters.outbound.security.bcrypt_password_hasher import BcryptPasswordHasher
-from application.auth.services.login_service import LoginService
-from domain.auth.exceptions import InvalidCredentials
+from fastapi_app.adapters.outbound.persistence.sqlalchemy.user_repository_sqlalchemy import UserRepositorySqlAlchemy
+from fastapi_app.adapters.outbound.security.jwt_token_service import JwtTokenService
+from fastapi_app.adapters.outbound.security.bcrypt_password_hasher import BcryptPasswordHasher
+from fastapi_app.application.auth.services.login_service import LoginService
+from fastapi_app.domain.auth.exceptions import InvalidCredentials
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

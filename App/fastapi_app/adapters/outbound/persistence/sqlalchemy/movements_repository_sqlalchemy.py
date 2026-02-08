@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from adapters.outbound.persistence.sqlalchemy.models import MovementDB
+from fastapi_app.adapters.outbound.persistence.sqlalchemy.models import MovementDB
 
 class MovementsRepositorySqlAlchemy:
     def __init__(self, db: Session):

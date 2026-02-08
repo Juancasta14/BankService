@@ -3,10 +3,10 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from database import get_db
 
-from adapters.outbound.persistence.sqlalchemy.unit_of_work_pse_sqlalchemy import (
+from fastapi_app.adapters.outbound.persistence.sqlalchemy.unit_of_work_pse_sqlalchemy import (
     SqlAlchemyPSEUnitOfWork,
 )
-from application.pse.services.process_gateway_service import (
+from fastapi_app.application.pse.services.process_gateway_service import (
     ProcessPSEGatewayService,
 )
 

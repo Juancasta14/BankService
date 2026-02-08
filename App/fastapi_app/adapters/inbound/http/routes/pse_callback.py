@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 
-from adapters.outbound.persistence.sqlalchemy.unit_of_work_pse_sqlalchemy import SqlAlchemyPSEUnitOfWork
-from application.pse.services.process_callback_service import ProcessPSECallbackService
-from adapters.inbound.http.dto.pse_dto import PSECallbackIn
+from fastapi_app.adapters.outbound.persistence.sqlalchemy.unit_of_work_pse_sqlalchemy import SqlAlchemyPSEUnitOfWork
+from fastapi_app.application.pse.services.process_callback_service import ProcessPSECallbackService
+from fastapi_app.adapters.inbound.http.dto.pse_dto import PSECallbackIn
  
 
 router = APIRouter(tags=["pse-callback"])

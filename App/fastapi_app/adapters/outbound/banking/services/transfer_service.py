@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from bankservice.domain.banking.exceptions import (
+from fastapi_app.domain.banking.exceptions import (
     InvalidAmount, SameAccount, AccountNotFound, InsufficientFunds
 )
-from bankservice.application.banking.ports.outbound.unit_of_work import UnitOfWork
+from fastapi_app.application.banking.ports.outbound.unit_of_work import UnitOfWork
 
 @dataclass
 class TransferService:
