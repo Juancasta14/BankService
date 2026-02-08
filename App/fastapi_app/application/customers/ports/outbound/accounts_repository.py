@@ -1,5 +1,8 @@
-from typing import Protocol, List
+from typing import Protocol
 
 class AccountsRepository(Protocol):
-    def list_by_customer(self, customer_id: int):
+    def get(self, account_id: int):
+        ...
+
+    def save(self, account) -> None:
         ...

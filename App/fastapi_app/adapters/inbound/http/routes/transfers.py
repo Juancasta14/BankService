@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 
 from adapters.outbound.persistence.sqlalchemy.unit_of_work_sqlalchemy import SqlAlchemyUnitOfWork
-from application.pse.services.transfer_service import TransferService
+from application.customers.services.transfer_service import TransferService
 from adapters.inbound.http.dto.transfer_dto import TransferRequest
 
 from domain.banking.exceptions import (
