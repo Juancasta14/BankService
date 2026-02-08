@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import MovementDB  # :contentReference[oaicite:3]{index=3}
+from models import MovementDB 
 from bankservice.application.banking.ports.outbound.movement_repository import MovementRepository
 
 class MovementRepositorySqlAlchemy(MovementRepository):

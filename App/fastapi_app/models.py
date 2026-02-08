@@ -17,47 +17,13 @@ Base = declarative_base()
 #   MODELOS SQLALCHEMY
 # =========================
 
-class AccountDB(Base):
-    __tablename__ = "accounts"
-
-    id = Column(Integer, primary_key=True, index=True)
-    customer_id = Column(Integer, index=True, nullable=False)
-    type = Column(String, nullable=False)
-    balance = Column(Float, nullable=False)
 
 
-class WalletDB(Base):
-    __tablename__ = "wallets"
-
-    id = Column(Integer, primary_key=True, index=True)
-    customer_id = Column(Integer, index=True, nullable=False)
-    balance = Column(Float, nullable=False)
 
 
-class UserDB(Base):
-    __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
 
-class MovementDB(Base):
-    __tablename__ = "movements"
 
-    id = Column(Integer, primary_key=True, index=True)
-    account_id = Column(Integer, nullable=False)
-    customer_id = Column(Integer, index=True, nullable=False)
-    account_type = Column(String, nullable=True)  # "ahorros", "corriente", etc.
-    date = Column(String, nullable=False)  # también podría ser Date, pero string ISO es suficiente
-    description = Column(String, nullable=False)
-    amount = Column(Float, nullable=False)
-    type = Column(String, nullable=False)  # "credito" o "debito"
-
-class MovementType(str, Enum):
-    CREDIT = "credit"
-    DEBIT = "debit"
-    TRANSFER_OUT = "transfer_out"
-    TRANSFER_IN = "transfer_in"
 
 class PSETransactionDB(Base):
     __tablename__ = "pse_transactions"
@@ -152,62 +118,10 @@ class Movement(BaseModel):
     class Config:
         from_attributes = True
 
-class PSETransactionCreate(BaseModel):
-    customer_id: int
-    account_id: int
-    amount: float
-    currency: str = "COP"
-    return_url_success: Optional[str] = None
-    return_url_failure: Optional[str] = None
-    metadata: Optional[dict] = None
-
-class PSETransactionOut(BaseModel):
-    id: int
-    internal_order_id: str
-    customer_id: int
-    account_id: int
-    amount: float
-    currency: str
-    status: str
-    provider: str
-    provider_tx_id: Optional[str] = None
-    provider_reference: Optional[str] = None
-    payment_url: Optional[str] = None
-    created_at: datetime
-    updated_at: datetime
-    expires_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True  # antes orm_mode = True
 
 
-class PSECallbackIn(BaseModel):
-    internal_order_id: str
-    status: str                    
-    provider_tx_id: Optional[str] = None
-    provider_reference: Optional[str] = None
-    raw_payload: Optional[dict] = None
-
-class PSETransferCreate(BaseModel):
-    source_account_id: int
-    destination_bank: str
-    destination_account: str
-    amount: float
-    description: str | None = None
 
 
-class PSETransferResponse(BaseModel):
-    id: int
-    source_account_id: int
-    destination_bank: str
-    destination_account: str
-    amount: float
-    description: str | None
-    status: str
-    created_at: str
-
-    class Config:
-        from_attributes = True
 # =========================
 #   HELPERS DE CONSULTA
 # =========================

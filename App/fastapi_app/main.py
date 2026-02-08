@@ -8,6 +8,7 @@ from fastapi.responses import RedirectResponse
 import random
 from adapters.inbound.http.routes.auth_routes import router as auth_router
 from adapters.inbound.http.routes.transfers import router as transfer_router
+from adapters.inbound.http.routes.payments import router as payments_router
 
 
 from database import get_db, engine
@@ -32,6 +33,7 @@ from models import (
 app = FastAPI(title="Bank Service with Auth")
 app.include_router(auth_router)
 app.include_router(transfer_router)
+app.include_router(payments_router)
 Base.metadata.create_all(bind=engine)
 
 # ========= ENDPOINTS DE NEGOCIO (PROTEGIDOS) =========
@@ -194,69 +196,6 @@ def pse_callback(data: PSECallbackIn, db: Session = Depends(get_db)):
 
     return {"message": "Callback procesado correctamente", "status": tx.status}
 
-@app.post("/payments")
-def create_pse_payment(
-    data: PSETransactionCreate,
-    db: Session = Depends(get_db),
-):
-    # 1. Obtener la cuenta de origen
-    account = (
-        db.query(AccountDB)
-        .filter(AccountDB.id == data.account_id)
-        .first()
-    )
-
-    if account is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Cuenta de origen no encontrada",
-        )
-    # 3. Validar saldo suficiente
-    if account.balance < data.amount:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                f"Saldo insuficiente en la cuenta #{account.id}. "
-                f"Saldo disponible: {account.balance:.2f}"
-            ),
-        )
-
-    # 4. Crear la orden PSE
-    try:
-        internal_order_id = f"PSE-{uuid4().hex[:20]}"
-
-        tx = PSETransactionDB(
-            internal_order_id=internal_order_id,
-            customer_id=data.customer_id,
-            account_id=data.account_id,
-            amount=data.amount,
-            currency=data.currency,
-            status="PENDING",
-            provider="PSE",
-            payment_url="",  # Flask puede construir la URL externa
-            return_url_success=data.return_url_success,
-            return_url_failure=data.return_url_failure,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(minutes=15),
-        )
-
-        db.add(tx)
-        db.commit()
-        db.refresh(tx)
-
-        return {
-            "id": tx.id,
-            "internal_order_id": tx.internal_order_id,
-            "status": tx.status,
-        }
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error interno al crear la orden PSE: {e}",
-        )
 
 
 @app.get("/pse-gateway/{internal_order_id}")
