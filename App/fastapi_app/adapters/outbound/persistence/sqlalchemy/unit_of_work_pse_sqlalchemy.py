@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from .account_repository_sqlalchemy import AccountRepositorySqlAlchemy
+from .accounts_repository_sqlalchemy import AccountRepositorySqlAlchemy
 from .pse_transaction_repository_sqlalchemy import PSETransactionRepositorySqlAlchemy
 from .movement_repository_sqlalchemy import MovementRepositorySqlAlchemy
 
