@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-
 from application.pse.ports.outbound.unit_of_work import UnitOfWork
 from .accounts_repository_sqlalchemy import AccountsRepositorySqlAlchemy
 from .movement_repository_sqlalchemy import MovementRepositorySqlAlchemy

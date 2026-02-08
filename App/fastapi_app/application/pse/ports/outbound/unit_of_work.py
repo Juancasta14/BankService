@@ -1,6 +1,6 @@
 from typing import Protocol
 from .pse_transaction_repository import PSETransactionRepository
-from .account_repository import AccountRepository
+from .accounts_repository import AccountRepository
 
 class UnitOfWork(Protocol):
     pse: PSETransactionRepository
