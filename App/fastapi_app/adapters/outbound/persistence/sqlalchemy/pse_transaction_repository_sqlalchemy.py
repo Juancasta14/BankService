@@ -1,5 +1,8 @@
+import json
 from sqlalchemy.orm import Session
-from adapters.outbound.persistence.sqlalchemy.models import PSETransactionDB
+from fastapi_app.adapters.outbound.persistence.sqlalchemy.models import PSETransactionDB
+
+
 
 class PSETransactionRepositorySqlAlchemy:
     def __init__(self, db: Session):
@@ -20,3 +23,7 @@ class PSETransactionRepositorySqlAlchemy:
 
     def save(self, tx) -> None:
         self.db.add(tx)
+
+    def serialize_payload(self, raw_payload: dict | None) -> str:
+        # Evita errores si viene None y mantiene caracteres (tildes, ñ)
+        return json.dumps(raw_payload or {}, ensure_ascii=False)

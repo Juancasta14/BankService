@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from models import MovementDB 
 from bankservice.application.banking.ports.outbound.movement_repository import MovementRepository
+from adapters.outbound.persistence.sqlalchemy.models import MovementDB
 
 class MovementRepositorySqlAlchemy(MovementRepository):
     def __init__(self, db: Session):
@@ -37,3 +38,30 @@ class MovementRepositorySqlAlchemy(MovementRepository):
             type="credito",
         )
         self.db.add_all([mov_out, mov_in])
+
+
+class MovementRepositorySqlAlchemy:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def add_credit(
+        self,
+        *,
+        account_id: int,
+        customer_id: int,
+        account_type: str | None,
+        date: str,
+        description: str,
+        amount: float,
+        type: str = "credito",
+    ) -> None:
+        mov = MovementDB(
+            account_id=account_id,
+            customer_id=customer_id,
+            account_type=account_type,
+            date=date,
+            description=description,
+            amount=amount,
+            type=type,
+        )
+        self.db.add(mov)

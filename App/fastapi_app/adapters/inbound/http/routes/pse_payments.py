@@ -4,11 +4,11 @@ from database import get_db
 
 from adapters.outbound.persistence.sqlalchemy.unit_of_work_pse_sqlalchemy import SqlAlchemyPSEUnitOfWork
 from application.pse.services.create_payment_service import CreatePSEPaymentService
-from models import PSETransactionCreate  # si aún no moviste DTOs; ideal moverlos a dto/
-from bankservice.adapters.inbound.dto import PSETransactionCreate
+from fastapi.adapters.inbound.http.dto import PSETransactionCreate
 
 
-router = APIRouter(tags=["payments"])
+
+router = APIRouter(tags=["pse-payments"])
 
 def get_create_payment_service(db: Session = Depends(get_db)) -> CreatePSEPaymentService:
     uow = SqlAlchemyPSEUnitOfWork(db)
