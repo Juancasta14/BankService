@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Depends, HTTPException, status, APIRouter, Request
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from fastapi import Query
@@ -8,13 +7,14 @@ from datetime import datetime, timedelta
 from uuid import uuid4
 from fastapi.responses import RedirectResponse
 import random
+from adapters.inbound.http.routes.auth_routes import router as auth_router
+
 
 from database import get_db, engine
 from models import (
     Base,
     AccountDB,
     WalletDB,
-    UserDB,
     MovementDB,
     PSETransactionDB,
     PSETransactionCreate,
@@ -27,72 +27,14 @@ from models import (
     CustomerSummary,
     get_accounts_by_customer,
     get_wallet_by_customer,
-    get_user_by_username,
     get_movements_by_customer,
     get_account_by_id,
 )
-from security import verify_password, create_access_token
 
 app = FastAPI(title="Bank Service with Auth")
-
-# Crear tablas (accounts, wallets, users...)
+app.include_router(auth_router)
+app.include_router(transfer_router)
 Base.metadata.create_all(bind=engine)
-
-# Donde FastAPI “cree” que está el endpoint de login
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-
-# ========= DEPENDENCIA: usuario actual a partir del token =========
-
-def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
-) -> UserDB:
-    from security import decode_token  # import aquí para evitar ciclos
-
-    payload = decode_token(token)
-    if payload is None or "sub" not in payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token inválido o expirado",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    username: str = payload["sub"]
-    user = get_user_by_username(db, username=username)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Usuario no encontrado",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return user
-
-
-# ========= AUTH =========
-
-@app.post("/auth/login")
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db),
-):
-    """
-    Recibe username y password (form-data) y devuelve un JWT si son correctos.
-    """
-    user = get_user_by_username(db, form_data.username)
-    if user is None or not verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Usuario o contraseña incorrectos",
-        )
-
-    access_token = create_access_token(data={"sub": user.username})
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "username": user.username,
-        "user_id": user.id,
-    }
-
 
 # ========= ENDPOINTS DE NEGOCIO (PROTEGIDOS) =========
 
