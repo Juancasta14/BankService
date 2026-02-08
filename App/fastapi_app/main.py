@@ -2,20 +2,18 @@ from fastapi import FastAPI, Depends, HTTPException, status, APIRouter, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from fastapi import Query
-from pydantic import BaseModel
 from datetime import datetime, timedelta
 from uuid import uuid4
 from fastapi.responses import RedirectResponse
 import random
 from adapters.inbound.http.routes.auth_routes import router as auth_router
+from adapters.inbound.http.routes.transfers import router as transfer_router
 
 
 from database import get_db, engine
 from models import (
     Base,
-    AccountDB,
     WalletDB,
-    MovementDB,
     PSETransactionDB,
     PSETransactionCreate,
     PSETransactionOut,
@@ -135,70 +133,8 @@ def get_customer_movements(
     )
     return movimientos_db
     
-class TransferRequest(BaseModel):
-    from_account_id: int
-    to_account_id: int
-    amount: float
-
-@app.post("/customers/{customer_id}/transfer")
-def make_transfer(req: TransferRequest, db: Session = Depends(get_db)):
-    from_account_id = req.from_account_id
-    to_account_id = req.to_account_id
-    amount = req.amount
-
-    if amount <= 0:
-        raise HTTPException(status_code=400, detail="El monto debe ser mayor que cero")
-
-    if from_account_id == to_account_id:
-        raise HTTPException(status_code=400, detail="La cuenta origen y destino no pueden ser iguales")
-
-    acc_out = db.query(AccountDB).filter(AccountDB.id == from_account_id).first()
-    acc_in  = db.query(AccountDB).filter(AccountDB.id == to_account_id).first()
-
-    if not acc_out:
-        raise HTTPException(status_code=404, detail="Cuenta de origen no encontrada")
-    if not acc_in:
-        raise HTTPException(status_code=404, detail="Cuenta de destino no encontrada")
-
-    if acc_out.balance < amount:
-        raise HTTPException(status_code=400, detail="Fondos insuficientes en la cuenta de origen")
-
-    try:
-        # Actualizar saldos
-        acc_out.balance -= amount
-        acc_in.balance  += amount
-
-        now = datetime.now().strftime("%Y-%m-%d")
-
-        mov_out = MovementDB(
-            account_id   = acc_out.id,
-            customer_id  = acc_out.customer_id,
-            account_type = acc_out.type,
-            date         = now,
-            description  = f"Transferencia enviada a cuenta {acc_in.id}",
-            amount       = amount,        # positivo
-            type         = "debito",      # <- clave
-        )
 
 
-        mov_in = MovementDB(
-            account_id   = acc_in.id,
-            customer_id  = acc_in.customer_id,
-            account_type = acc_in.type,
-            date         = now,
-            description  = f"Transferencia recibida desde cuenta {acc_out.id}",
-            amount       = amount,        # positivo
-            type         = "credito",     # <- clave
-        )
-
-        db.add_all([mov_out, mov_in])
-        db.commit()
-
-        return {"message": "Transferencia realizada correctamente"}
-
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error interno al procesar la transferencia: {e}")
 
 @app.get("/payments/{internal_order_id}")
 def get_pse_payment(
