@@ -11,7 +11,7 @@ class SqlAlchemyUnitOfWork(UnitOfWork):
     """
     def __init__(self, db: Session):
         self.db = db
-        self.accounts = AccountRepositorySqlAlchemy(db)
+        self.accounts = AccountsRepositorySqlAlchemy(db)
         self.movements = MovementRepositorySqlAlchemy(db)
 
     def commit(self) -> None:
