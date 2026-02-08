@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from models import Base
+from database import engine
 from adapters.inbound.http.routes.auth_routes import router as auth_router
 from adapters.inbound.http.routes.transfers import router as transfer_router
 from adapters.inbound.http.routes.pse_payments import router as pse_payments_router
