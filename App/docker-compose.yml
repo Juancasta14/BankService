@@ -20,11 +20,8 @@ services:
     container_name: banco_fastapi
     restart: unless-stopped
     environment:
-      DB_USER: banco_user
-      DB_PASSWORD: banco_password
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: banco_db
+    DATABASE_URL: postgresql+psycopg2://postgres.xponoxoiqjmkslmqazsu:TU_PASSWORD@aws-0-us-west-2.pooler.supabase.com:6543/postgres?sslmode=require
+
     depends_on:
       - db
     ports:
