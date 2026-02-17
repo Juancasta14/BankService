@@ -19,9 +19,14 @@ services:
     build: ./fastapi_app
     container_name: banco_fastapi
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      DATABASE_URL: "postgresql+psycopg2://postgres.xponoxoiqjmkslmqazsu:j03g33$gay**@aws-0-us-west-2.pooler.supabase.com:6543/postgres?sslmode=require"
-
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
     depends_on:
       - db
     ports:
