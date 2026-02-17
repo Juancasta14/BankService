@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from application.pse.ports.outbound.movement_repository import MovementRepository
 from adapters.outbound.persistence.sqlalchemy.models import MovementDB
+from datetime import date
 
 
 class MovementRepositorySqlAlchemy(MovementRepository):
@@ -16,7 +17,7 @@ class MovementRepositorySqlAlchemy(MovementRepository):
         customer_in_id: int,
         acc_out_type: str | None,
         acc_in_type: str | None,
-        date: str,
+        date: date,
         amount: float,
     ) -> None:
         mov_out = MovementDB(
