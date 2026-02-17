@@ -40,7 +40,7 @@ class MovementDB(Base):
     account_id = Column(Integer, nullable=False)
     customer_id = Column(Integer, index=True, nullable=False)
     account_type = Column(String, nullable=True)  # "ahorros", "corriente", etc.
-    date = Column(Date, nullable=False)  # también podría ser Date, pero string ISO es suficiente
+    date = Column(date, nullable=False)  # también podría ser Date, pero string ISO es suficiente
     description = Column(String, nullable=False)
     amount = Column(Float, nullable=False)
     type = Column(String, nullable=False)  # "credito" o "debito"
