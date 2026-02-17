@@ -17,7 +17,7 @@ class MovementRepositorySqlAlchemy(MovementRepository):
         customer_in_id: int,
         acc_out_type: str | None,
         acc_in_type: str | None,
-        date: date,
+        date: str,
         amount: float,
     ) -> None:
         mov_out = MovementDB(
@@ -46,7 +46,7 @@ class MovementRepositorySqlAlchemy(MovementRepository):
         account_id: int,
         customer_id: int,
         account_type: str | None,
-        date: date,
+        date: str,
         description: str,
         amount: float,
     ) -> None:
