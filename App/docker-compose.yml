@@ -29,7 +29,7 @@ services:
       #DB_NAME: banco_db
       #DB_SSLMODE: "disable"
 
-      LOGIN_EVENTS_URL: "https://4uxfgmeuzqj4j57mrmlkjsv7fy0kvydz.lambda-url.us-east-1.on.aws/"
+      #LOGIN_EVENTS_URL: "https://4uxfgmeuzqj4j57mrmlkjsv7fy0kvydz.lambda-url.us-east-1.on.aws/"
       LOGIN_EVENTS_SECRET: "Super_secret"
       SERVICE_NAME: "bankservice"
       ENVIRONMENT: "dev"
