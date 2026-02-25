@@ -76,8 +76,7 @@ class HttpApiLoginNotifier:
             },
             timeout=self.timeout_seconds,
         )
-        except Exception as e:
-    print("LOGIN NOTIFY ERROR:", repr(e))
+
 
       
         if resp.status_code >= 400:
