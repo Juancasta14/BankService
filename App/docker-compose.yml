@@ -17,6 +17,7 @@ services:
 
   fastapi:
     build: ./fastapi_app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
     container_name: banco_fastapi
     restart: unless-stopped
     environment:
@@ -25,6 +26,10 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: banco_db
+      LOGIN_EVENTS_URL: "https://4uxfgmeuzqj4j57mrmlkjsv7fy0kvydz.lambda-url.us-east-1.on.aws/"
+      SERVICE_NAME: "bankservice"
+      ENVIRONMENT: "dev"
+      LOGIN_EVENTS_TIMEOUT: "2.5"
     depends_on:
       - db
     ports:
