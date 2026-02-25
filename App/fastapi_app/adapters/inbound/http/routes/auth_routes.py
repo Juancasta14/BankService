@@ -14,12 +14,12 @@ from domain.auth.exceptions import InvalidCredentials
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-
 def get_login_service(db: Session = Depends(get_db)) -> LoginService:
     notifier = HttpApiLoginNotifier(
-        endpoint_url=os.environ["LOGIN_EVENTS_URL"],  # ej: https://xxxx.execute-api.../events/login
+        endpoint_url=os.environ["LOGIN_EVENTS_URL"],
         service_name=os.environ.get("SERVICE_NAME", "bankservice"),
         environment=os.environ.get("ENVIRONMENT", "dev"),
+        shared_secret=os.environ["LOGIN_EVENTS_SECRET"],
         timeout_seconds=float(os.environ.get("LOGIN_EVENTS_TIMEOUT", "2.5")),
     )
 
@@ -27,9 +27,8 @@ def get_login_service(db: Session = Depends(get_db)) -> LoginService:
         users=UserRepositorySqlAlchemy(db),
         hasher=BcryptPasswordHasher(),
         tokens=JwtTokenService(),
-        notifier=notifier,  # 👈 NUEVO
+        notifier=notifier,
     )
-
 
 @router.post("/login")
 def login(
