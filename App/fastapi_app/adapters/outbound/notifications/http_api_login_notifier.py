@@ -1,7 +1,6 @@
 import json
 import hmac
 import hashlib
-import time
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
@@ -31,7 +30,7 @@ class HttpApiLoginNotifier:
     def notify_login(
         self,
         *,
-        user_id: str,
+        user_id: int | None,
         username: str,
         success: bool,
         auth_method: str = "password",
@@ -39,12 +38,22 @@ class HttpApiLoginNotifier:
         user_agent: Optional[str] = None,
         event_id: Optional[str] = None,
     ) -> None:
+        """
+        Sends a signed USER_LOGIN event to an HTTP endpoint (Lambda Function URL / API Gateway).
+
+        Signature:
+          X-Signature = HMAC-SHA256 hex digest of the *raw request body bytes*
+        """
+
+        # Keep Lambda validation happy: actor.user_id must exist
+        user_id_value = str(user_id) if user_id is not None else "unknown"
+
         payload = {
             "event_id": event_id or str(uuid.uuid4()),
             "event_type": "USER_LOGIN",
             "event_version": "1.0",
             "occurred_at": datetime.now(timezone.utc).isoformat(),
-            "actor": {"user_id": str(user_id), "username": username},
+            "actor": {"user_id": user_id_value, "username": username},
             "context": {
                 "success": bool(success),
                 "auth_method": auth_method,
@@ -58,7 +67,7 @@ class HttpApiLoginNotifier:
             },
         }
 
-       
+        # Canonical JSON (prevents signature mismatches due to whitespace/key ordering)
         raw = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
         signature = hmac.new(
@@ -69,7 +78,7 @@ class HttpApiLoginNotifier:
 
         resp = self.session.post(
             self.endpoint_url,
-            data=raw,  
+            data=raw,  # IMPORTANT: send the exact bytes you signed
             headers={
                 "Content-Type": "application/json",
                 "X-Signature": signature,
@@ -77,7 +86,5 @@ class HttpApiLoginNotifier:
             timeout=self.timeout_seconds,
         )
 
-
-      
         if resp.status_code >= 400:
             raise RuntimeError(f"Login event notify failed: {resp.status_code} {resp.text}")
