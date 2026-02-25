@@ -12,7 +12,7 @@ class LoginService:
     users: UserRepository
     hasher: PasswordHasher
     tokens: TokenService
-    notifier: LoginNotifier 
+    notifier: LoginNotifier
 
     def login(
         self,
@@ -24,18 +24,15 @@ class LoginService:
     ) -> dict:
         user = self.users.get_by_username(username)
         if user is None:
-           
             self._safe_notify(user_id=None, username=username, ip=ip, user_agent=user_agent, success=False)
             raise InvalidCredentials("Usuario o contraseña incorrectos")
 
         if not self.hasher.verify(password, user.hashed_password):
-           
             self._safe_notify(user_id=user.id, username=user.username, ip=ip, user_agent=user_agent, success=False)
             raise InvalidCredentials("Usuario o contraseña incorrectos")
 
         access_token = self.tokens.create_access_token(subject=user.username)
 
-        
         self._safe_notify(
             user_id=user.id,
             username=user.username,
@@ -54,7 +51,7 @@ class LoginService:
     def _safe_notify(
         self,
         *,
-        user_id: int,
+        user_id: int | None,
         username: str,
         ip: str | None,
         user_agent: str | None,
@@ -62,12 +59,12 @@ class LoginService:
     ) -> None:
         try:
             self.notifier.notify_login(
-                user_id=user_id,
+                user_id=user_id,          # puede ser None
                 username=username,
                 ip=ip,
                 user_agent=user_agent,
                 success=success,
             )
         except Exception:
-        
+            # ideal: loggear al menos el error, pero no romper login
             pass

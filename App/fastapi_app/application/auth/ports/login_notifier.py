@@ -4,10 +4,9 @@ class LoginNotifier(Protocol):
     def notify_login(
         self,
         *,
-        user_id: int,
+        user_id: int | None,
         username: str,
-        ip: str | None,
-        user_agent: str | None,
-        success: bool = True,
-    ) -> None:
-        ...
+        success: bool,
+        ip: str | None = None,
+        user_agent: str | None = None,
+    ) -> None: ...
