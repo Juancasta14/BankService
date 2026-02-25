@@ -1,7 +1,6 @@
 version: "3.9"
 
 services:
-
   db:
     image: postgres:16
     container_name: banco_db
@@ -27,7 +26,7 @@ services:
     DB_USER: banco_user
     DB_PASSWORD: banco_password
     DB_HOST: db
-    DB_PORT: 5432
+    DB_PORT: 6543
     DB_NAME: banco_db
     DB_SSLMODE: "disable"
 
