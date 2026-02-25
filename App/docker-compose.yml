@@ -49,6 +49,6 @@ services:
       - fastapi
     ports:
       - "80:5000"
-
-volumes:
-  pgdata:
+    command: python app.py
+#volumes:
+ # pgdata:
