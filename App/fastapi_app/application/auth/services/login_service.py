@@ -49,22 +49,23 @@ class LoginService:
         }
 
     def _safe_notify(
-        self,
-        *,
-        user_id: int | None,
-        username: str,
-        ip: str | None,
-        user_agent: str | None,
-        success: bool,
-    ) -> None:
-        try:
-            self.notifier.notify_login(
-                user_id=user_id,          # puede ser None
-                username=username,
-                ip=ip,
-                user_agent=user_agent,
-                success=success,
-            )
-        except Exception:
-            # ideal: loggear al menos el error, pero no romper login
-            pass
+    self,
+    *,
+    user_id: int | None,
+    username: str,
+    ip: str | None,
+    user_agent: str | None,
+    success: bool,
+) -> None:
+    try:
+        print("NOTIFY: about to send", {"user_id": user_id, "username": username, "success": success, "ip": ip})
+        self.notifier.notify_login(
+            user_id=user_id,
+            username=username,
+            ip_address=ip,    
+            user_agent=user_agent,
+            success=success,
+        )
+        print("NOTIFY: sent OK")
+    except Exception as e:
+        print("NOTIFY: failed", repr(e))
