@@ -7,6 +7,7 @@ services:
     container_name: banco_db
     restart: unless-stopped
     environment:
+      DB_SSLMODE: "disable"
       POSTGRES_DB: banco_db
       POSTGRES_USER: banco_user
       POSTGRES_PASSWORD: banco_password
@@ -16,27 +17,30 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   fastapi:
-    build: ./fastapi_app
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
-    container_name: banco_fastapi
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      DB_USER: banco_user
-      DB_PASSWORD: banco_password
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: banco_db
-      LOGIN_EVENTS_URL: https://4uxfgmeuzqj4j57mrmlkjsv7fy0kvydz.lambda-url.us-east-1.on.aws/"
-      LOGIN_EVENTS_SECRET: "Super_secret"
-      SERVICE_NAME: "bankservice"
-      ENVIRONMENT: "dev"
-      LOGIN_EVENTS_TIMEOUT: "2.5"      
-    depends_on:
-      - db
-    ports:
-      - "8000:8000"
+  build: ./fastapi_app
+  command: uvicorn main:app --host 0.0.0.0 --port 8000
+  container_name: banco_fastapi
+  restart: unless-stopped
+  env_file:
+    - .env
+  environment:
+    DB_USER: banco_user
+    DB_PASSWORD: banco_password
+    DB_HOST: db
+    DB_PORT: 5432
+    DB_NAME: banco_db
+    DB_SSLMODE: "disable"
+
+    LOGIN_EVENTS_URL: "https://4uxfgmeuzqj4j57mrmlkjsv7fy0kvydz.lambda-url.us-east-1.on.aws/"
+    LOGIN_EVENTS_SECRET: "Super_secret"
+    SERVICE_NAME: "bankservice"
+    ENVIRONMENT: "dev"
+    LOGIN_EVENTS_TIMEOUT: "2.5"
+  depends_on:
+    - db
+  ports:
+    - "8000:8000"
+   
 
   flask:
     build: ./flask_app
