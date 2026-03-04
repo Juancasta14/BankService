@@ -21,10 +21,14 @@ if not DATABASE_URL:
         f"?sslmode={DB_SSLMODE}"
     )
 
+connect_args = {}
+if DATABASE_URL and DATABASE_URL.startswith("postgresql"):
+    connect_args["options"] = "-c search_path=public"
+
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,
-    connect_args={"options": "-c search_path=public"},
+    connect_args=connect_args,
 )
 
 SessionLocal = sessionmaker(

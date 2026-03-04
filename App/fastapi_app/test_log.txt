@@ -1,0 +1,40 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.3, pytest-9.0.2, pluggy-1.6.0 -- C:\Users\juand\Banco\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\juand\Banco\App\fastapi_app
+plugins: anyio-4.12.1, cov-5.0.0
+collecting ... collected 9 items
+
+tests/e2e/test_api_auth.py::test_api_login_success PASSED                [ 11%]
+tests/e2e/test_api_auth.py::test_api_login_failure PASSED                [ 22%]
+tests/e2e/test_api_customers.py::test_api_get_accounts PASSED            [ 33%]
+tests/e2e/test_api_customers.py::test_api_get_accounts_empty PASSED      [ 44%]
+tests/e2e/test_api_customers.py::test_api_get_wallet PASSED              [ 55%]
+tests/e2e/test_api_customers.py::test_api_get_wallet_not_found PASSED    [ 66%]
+tests/e2e/test_api_customers.py::test_api_get_summary PASSED             [ 77%]
+tests/e2e/test_api_customers.py::test_api_get_summary_not_found PASSED   [ 88%]
+tests/e2e/test_api_customers.py::test_api_get_movements PASSED           [100%]
+
+============================== warnings summary ===============================
+adapters\inbound\http\dto\pse_dto.py:16
+  C:\Users\juand\Banco\App\fastapi_app\adapters\inbound\http\dto\pse_dto.py:16: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class PSETransactionOut(BaseModel):
+
+adapters\inbound\http\dto\pse_dto.py:52
+  C:\Users\juand\Banco\App\fastapi_app\adapters\inbound\http\dto\pse_dto.py:52: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class PSETransferResponse(BaseModel):
+
+adapters\inbound\http\dto\customer_dto.py:5
+  C:\Users\juand\Banco\App\fastapi_app\adapters\inbound\http\dto\customer_dto.py:5: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Account(BaseModel):
+
+adapters\inbound\http\dto\customer_dto.py:15
+  C:\Users\juand\Banco\App\fastapi_app\adapters\inbound\http\dto\customer_dto.py:15: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Wallet(BaseModel):
+
+adapters\inbound\http\dto\customer_dto.py:24
+  C:\Users\juand\Banco\App\fastapi_app\adapters\inbound\http\dto\customer_dto.py:24: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+    class Movement(BaseModel):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 9 passed, 5 warnings in 0.96s ========================
