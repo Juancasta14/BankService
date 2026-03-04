@@ -2,12 +2,14 @@ from dataclasses import dataclass
 from typing import Optional
 from datetime import datetime
 
+
 @dataclass
 class MockAccount:
     id: int
     customer_id: int
     balance: float
     type: str = "ahorros"
+
 
 @dataclass
 class MockPSETransaction:
@@ -29,6 +31,7 @@ class MockPSETransaction:
     provider_reference: Optional[str] = None
     callback_status_raw: Optional[str] = None
 
+
 class MockAccountsRepository:
     def __init__(self):
         self.accounts = {}
@@ -39,6 +42,7 @@ class MockAccountsRepository:
     def save(self, account) -> None:
         self.accounts[account.id] = account
 
+
 class MockPSERepository:
     def __init__(self):
         self.transactions = {}
@@ -48,19 +52,23 @@ class MockPSERepository:
         tx = MockPSETransaction(id=self.counter, **kwargs)
         self.counter += 1
         return tx
-    
+
     def add(self, tx: MockPSETransaction):
         self.transactions[tx.internal_order_id] = tx
 
     def save(self, tx: MockPSETransaction):
         self.transactions[tx.internal_order_id] = tx
 
-    def get_by_internal_order_id(self, internal_order_id: str) -> Optional[MockPSETransaction]:
+    def get_by_internal_order_id(
+        self, internal_order_id: str
+    ) -> Optional[MockPSETransaction]:
         return self.transactions.get(internal_order_id)
-        
+
     def serialize_payload(self, raw_payload: dict | None) -> str:
         import json
+
         return json.dumps(raw_payload) if raw_payload else "{}"
+
 
 class MockMovementsRepository:
     def __init__(self):
@@ -68,6 +76,7 @@ class MockMovementsRepository:
 
     def add_credit(self, **kwargs):
         self.movements.append(kwargs)
+
 
 class MockPSEUnitOfWork:
     def __init__(self):

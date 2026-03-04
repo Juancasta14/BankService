@@ -1,5 +1,6 @@
 from typing import Protocol
 
+
 class LoginNotifier(Protocol):
     def notify_login(
         self,

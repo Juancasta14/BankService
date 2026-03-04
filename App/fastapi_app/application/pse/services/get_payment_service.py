@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from application.pse.ports.outbound.unit_of_work import UnitOfWork
 
+
 @dataclass
 class GetPSEPaymentService:
     uow: UnitOfWork

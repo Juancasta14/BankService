@@ -2,9 +2,13 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from domain.banking.exceptions import (
-    InvalidAmount, SameAccount, AccountNotFound, InsufficientFunds
+    InvalidAmount,
+    SameAccount,
+    AccountNotFound,
+    InsufficientFunds,
 )
 from application.banking.ports.outbound.unit_of_work import UnitOfWork
+
 
 @dataclass
 class TransferService:
@@ -17,7 +21,7 @@ class TransferService:
             raise SameAccount("La cuenta origen y destino no pueden ser iguales")
 
         acc_out = self.uow.accounts.get(from_account_id)
-        acc_in  = self.uow.accounts.get(to_account_id)
+        acc_in = self.uow.accounts.get(to_account_id)
 
         if not acc_out:
             raise AccountNotFound("Cuenta de origen no encontrada")
@@ -29,7 +33,7 @@ class TransferService:
 
         # negocio
         acc_out.balance -= amount
-        acc_in.balance  += amount
+        acc_in.balance += amount
 
         date_str = datetime.now().strftime("%Y-%m-%d")
 

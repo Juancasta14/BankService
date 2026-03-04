@@ -12,9 +12,11 @@ from application.pse.services.process_gateway_service import (
 
 router = APIRouter(tags=["pse-gateway"])
 
+
 def get_gateway_service(db: Session = Depends(get_db)) -> ProcessPSEGatewayService:
     uow = SqlAlchemyPSEUnitOfWork(db)
     return ProcessPSEGatewayService(uow=uow)
+
 
 @router.get("/pse-gateway/{internal_order_id}")
 def pse_gateway(

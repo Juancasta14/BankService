@@ -1,5 +1,6 @@
 from typing import Protocol, Optional
 
+
 class TokenService(Protocol):
     def create_access_token(self, subject: str) -> str: ...
     def decode_subject(self, token: str) -> Optional[str]: ...

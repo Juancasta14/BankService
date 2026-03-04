@@ -2,22 +2,33 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from adapters.outbound.persistence.sqlalchemy.database import get_db
 
-from adapters.outbound.persistence.sqlalchemy.unit_of_work_sqlalchemy import SqlAlchemyUnitOfWork
+from adapters.outbound.persistence.sqlalchemy.unit_of_work_sqlalchemy import (
+    SqlAlchemyUnitOfWork,
+)
 from application.customers.services.transfer_service import TransferService
 from adapters.inbound.http.dto.transfer_dto import TransferRequest
 
 from domain.banking.exceptions import (
-    InvalidAmount, SameAccount, AccountNotFound, InsufficientFunds
+    InvalidAmount,
+    SameAccount,
+    AccountNotFound,
+    InsufficientFunds,
 )
 
 router = APIRouter(tags=["transfers"])
+
 
 def get_transfer_service(db: Session = Depends(get_db)) -> TransferService:
     uow = SqlAlchemyUnitOfWork(db)
     return TransferService(uow=uow)
 
+
 @router.post("/customers/{customer_id}/transfer")
-def make_transfer(customer_id: int, req: TransferRequest, svc: TransferService = Depends(get_transfer_service)):
+def make_transfer(
+    customer_id: int,
+    req: TransferRequest,
+    svc: TransferService = Depends(get_transfer_service),
+):
     try:
         svc.transfer(
             from_account_id=req.from_account_id,
@@ -34,4 +45,6 @@ def make_transfer(customer_id: int, req: TransferRequest, svc: TransferService =
     except Exception as e:
         # si algo falla, rollback
         # (si quieres: expón rollback dentro del service con try/except)
-        raise HTTPException(status_code=500, detail=f"Error interno al procesar la transferencia: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Error interno al procesar la transferencia: {e}"
+        )

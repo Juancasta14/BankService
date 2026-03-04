@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from adapters.outbound.persistence.sqlalchemy.models import PSETransactionDB
 
 
-
 class PSETransactionRepositorySqlAlchemy:
     def __init__(self, db: Session):
         self.db = db

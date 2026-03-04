@@ -4,20 +4,30 @@ from typing import List, Optional
 
 from adapters.outbound.persistence.sqlalchemy.database import get_db
 from adapters.inbound.http.dependencies import get_current_user
-from adapters.inbound.http.dto.customer_dto import Account, Wallet, Movement, CustomerSummary
+from adapters.inbound.http.dto.customer_dto import (
+    Account,
+    Wallet,
+    Movement,
+    CustomerSummary,
+)
 
 from adapters.outbound.persistence.sqlalchemy.models import UserDB
 
-from adapters.outbound.persistence.sqlalchemy.accounts_repository_sqlalchemy import AccountsRepositorySqlAlchemy
-from adapters.outbound.persistence.sqlalchemy.wallets_repository_sqlalchemy import WalletsRepositorySqlAlchemy
-from adapters.outbound.persistence.sqlalchemy.movements_repository_sqlalchemy import MovementsRepositorySqlAlchemy
+from adapters.outbound.persistence.sqlalchemy.accounts_repository_sqlalchemy import (
+    AccountsRepositorySqlAlchemy,
+)
+from adapters.outbound.persistence.sqlalchemy.wallets_repository_sqlalchemy import (
+    WalletsRepositorySqlAlchemy,
+)
+from adapters.outbound.persistence.sqlalchemy.movements_repository_sqlalchemy import (
+    MovementsRepositorySqlAlchemy,
+)
 
 # Services (casos de uso)
 from application.customers.services.get_accounts_service import GetAccountsService
 from application.customers.services.get_wallet_service import GetWalletService
 from application.customers.services.get_movements_service import GetMovementsService
 from application.customers.services.get_summary_service import GetSummaryService
-
 
 router = APIRouter(prefix="/customers", tags=["customers"])
 

@@ -1,5 +1,6 @@
 from typing import Protocol
 
+
 class MovementRepository(Protocol):
     def add_transfer_movements(
         self,

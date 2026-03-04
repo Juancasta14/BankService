@@ -4,7 +4,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from adapters.outbound.persistence.sqlalchemy.database import get_db
-from adapters.outbound.persistence.sqlalchemy.user_repository_sqlalchemy import UserRepositorySqlAlchemy
+from adapters.outbound.persistence.sqlalchemy.user_repository_sqlalchemy import (
+    UserRepositorySqlAlchemy,
+)
 from adapters.outbound.security.jwt_token_service import JwtTokenService
 from adapters.outbound.security.bcrypt_password_hasher import BcryptPasswordHasher
 from adapters.outbound.notifications.http_api_login_notifier import HttpApiLoginNotifier
@@ -13,6 +15,7 @@ from application.auth.services.login_service import LoginService
 from domain.auth.exceptions import InvalidCredentials
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
 
 def get_login_service(db: Session = Depends(get_db)) -> LoginService:
     notifier = HttpApiLoginNotifier(
@@ -29,6 +32,7 @@ def get_login_service(db: Session = Depends(get_db)) -> LoginService:
         tokens=JwtTokenService(),
         notifier=notifier,
     )
+
 
 @router.post("/login")
 def login(

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import Any
 import random
 
+
 @dataclass
 class ProcessPSEGatewayService:
     uow: Any  # SqlAlchemyPSEUnitOfWork
@@ -13,7 +14,9 @@ class ProcessPSEGatewayService:
             raise ValueError("Transacción no encontrada")
 
         # Expirada
-        if tx.expires_at and tx.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+        if tx.expires_at and tx.expires_at.replace(tzinfo=timezone.utc) < datetime.now(
+            timezone.utc
+        ):
             tx.status = "EXPIRED"
             tx.updated_at = datetime.now(timezone.utc)
             self.uow.commit()

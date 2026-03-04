@@ -9,11 +9,6 @@ from adapters.inbound.http.routes.pse_callback import router as pse_callback_rou
 from adapters.inbound.http.routes.payments_query import router as payments_query_router
 from adapters.inbound.http.routes.customers import router as customers_router
 
-
-
-
-
-
 app = FastAPI(title="Bank Service with Auth")
 
 Base.metadata.create_all(bind=engine)
@@ -25,6 +20,3 @@ app.include_router(pse_gateway_router)
 app.include_router(pse_callback_router)
 app.include_router(payments_query_router)
 app.include_router(customers_router)
-
-
-

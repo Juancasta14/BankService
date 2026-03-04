@@ -1,5 +1,6 @@
 from application.auth.ports.token_service import TokenService
-from adapters.outbound.security.security import create_access_token, decode_token  
+from adapters.outbound.security.security import create_access_token, decode_token
+
 
 class JwtTokenService(TokenService):
     def create_access_token(self, subject: str) -> str:

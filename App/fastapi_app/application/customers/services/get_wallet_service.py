@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class GetWalletService:
     wallets_repo: any

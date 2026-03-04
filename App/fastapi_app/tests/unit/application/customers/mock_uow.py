@@ -1,11 +1,13 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class MockAccount:
     id: int
     customer_id: int
     balance: float
     type: str = "ahorros"
+
 
 class MockAccountsRepository:
     def __init__(self):
@@ -19,6 +21,7 @@ class MockAccountsRepository:
 
     def save(self, account) -> None:
         self.accounts[account.id] = account
+
 
 class MockMovementsRepository:
     def __init__(self):
@@ -35,16 +38,19 @@ class MockMovementsRepository:
         date: str,
         amount: float,
     ):
-        self.movements.append({
-            "acc_out_id": acc_out_id,
-            "acc_in_id": acc_in_id,
-            "customer_out_id": customer_out_id,
-            "customer_in_id": customer_in_id,
-            "acc_out_type": acc_out_type,
-            "acc_in_type": acc_in_type,
-            "date": date,
-            "amount": amount,
-        })
+        self.movements.append(
+            {
+                "acc_out_id": acc_out_id,
+                "acc_in_id": acc_in_id,
+                "customer_out_id": customer_out_id,
+                "customer_in_id": customer_in_id,
+                "acc_out_type": acc_out_type,
+                "acc_in_type": acc_in_type,
+                "date": date,
+                "amount": amount,
+            }
+        )
+
 
 class MockUnitOfWork:
     def __init__(self):

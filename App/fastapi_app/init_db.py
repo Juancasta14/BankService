@@ -30,11 +30,7 @@ def init():
             print(" - admin / admin123")
             print(" - user / user123")
         else:
-            user_user = (
-                db.query(UserDB)
-                .filter(UserDB.username == "user")
-                .first()
-            )
+            user_user = db.query(UserDB).filter(UserDB.username == "user").first()
             if not user_user:
                 user_user = UserDB(
                     username="user",

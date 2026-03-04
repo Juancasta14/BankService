@@ -6,8 +6,9 @@ from tests.unit.application.auth.mock_ports import (
     InMemoryUserRepository,
     MockPasswordHasher,
     MockTokenService,
-    MockLoginNotifier
+    MockLoginNotifier,
 )
+
 
 @pytest.fixture
 def login_service():
@@ -23,12 +24,10 @@ def login_service():
     service = LoginService(users=users, hasher=hasher, tokens=tokens, notifier=notifier)
     return service
 
+
 def test_login_success(login_service: LoginService):
     result = login_service.login(
-        username="testuser",
-        password="mypassword",
-        ip="127.0.0.1",
-        user_agent="pytest"
+        username="testuser", password="mypassword", ip="127.0.0.1", user_agent="pytest"
     )
 
     assert result["username"] == "testuser"
@@ -41,23 +40,25 @@ def test_login_success(login_service: LoginService):
     assert notifier.notifications[0]["success"] is True
     assert notifier.notifications[0]["username"] == "testuser"
 
+
 def test_login_invalid_password_raises_exception(login_service: LoginService):
     with pytest.raises(InvalidCredentials) as excinfo:
         login_service.login(username="testuser", password="wrongpassword")
-    
+
     assert "Usuario o contraseña incorrectos" in str(excinfo.value)
-    
+
     notifier: MockLoginNotifier = login_service.notifier
     assert len(notifier.notifications) == 1
     assert notifier.notifications[0]["success"] is False
     assert notifier.notifications[0]["username"] == "testuser"
 
+
 def test_login_user_not_found_raises_exception(login_service: LoginService):
     with pytest.raises(InvalidCredentials) as excinfo:
         login_service.login(username="unknownuser", password="any")
-    
+
     assert "Usuario o contraseña incorrectos" in str(excinfo.value)
-    
+
     notifier: MockLoginNotifier = login_service.notifier
     assert len(notifier.notifications) == 1
     assert notifier.notifications[0]["success"] is False

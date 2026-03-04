@@ -2,21 +2,27 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from adapters.outbound.persistence.sqlalchemy.database import get_db
 
-from adapters.outbound.persistence.sqlalchemy.unit_of_work_pse_sqlalchemy import SqlAlchemyPSEUnitOfWork
+from adapters.outbound.persistence.sqlalchemy.unit_of_work_pse_sqlalchemy import (
+    SqlAlchemyPSEUnitOfWork,
+)
 from application.pse.services.create_payment_service import CreatePSEPaymentService
 from adapters.inbound.http.dto.pse_dto import PSETransactionCreate
 
-
-
-
 router = APIRouter(tags=["pse-payments"])
 
-def get_create_payment_service(db: Session = Depends(get_db)) -> CreatePSEPaymentService:
+
+def get_create_payment_service(
+    db: Session = Depends(get_db),
+) -> CreatePSEPaymentService:
     uow = SqlAlchemyPSEUnitOfWork(db)
     return CreatePSEPaymentService(uow=uow)
 
+
 @router.post("/payments")
-def create_payment(data: PSETransactionCreate, svc: CreatePSEPaymentService = Depends(get_create_payment_service)):
+def create_payment(
+    data: PSETransactionCreate,
+    svc: CreatePSEPaymentService = Depends(get_create_payment_service),
+):
     try:
         return svc.create_payment(
             customer_id=data.customer_id,
@@ -34,4 +40,6 @@ def create_payment(data: PSETransactionCreate, svc: CreatePSEPaymentService = De
             raise HTTPException(status_code=400, detail=msg)
         raise HTTPException(status_code=400, detail=msg)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error interno al crear la orden PSE: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Error interno al crear la orden PSE: {e}"
+        )

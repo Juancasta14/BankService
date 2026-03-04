@@ -3,6 +3,7 @@ from typing import Any
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
+
 @dataclass
 class CreatePSEPaymentService:
     uow: Any  # UnitOfWork
@@ -24,7 +25,9 @@ class CreatePSEPaymentService:
 
         # 2) saldo suficiente (tu comportamiento actual)
         if account.balance < amount:
-            raise ValueError(f"Saldo insuficiente en la cuenta #{account.id}. Saldo disponible: {account.balance:.2f}")
+            raise ValueError(
+                f"Saldo insuficiente en la cuenta #{account.id}. Saldo disponible: {account.balance:.2f}"
+            )
 
         # 3) crear tx
         internal_order_id = f"PSE-{uuid4().hex[:20]}"

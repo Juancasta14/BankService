@@ -68,7 +68,9 @@ class HttpApiLoginNotifier:
         }
 
         # Canonical JSON (prevents signature mismatches due to whitespace/key ordering)
-        raw = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        raw = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode(
+            "utf-8"
+        )
 
         signature = hmac.new(
             self.shared_secret.encode("utf-8"),
@@ -87,4 +89,6 @@ class HttpApiLoginNotifier:
         )
 
         if resp.status_code >= 400:
-            raise RuntimeError(f"Login event notify failed: {resp.status_code} {resp.text}")
+            raise RuntimeError(
+                f"Login event notify failed: {resp.status_code} {resp.text}"
+            )

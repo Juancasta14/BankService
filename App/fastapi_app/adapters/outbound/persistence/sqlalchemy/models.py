@@ -5,6 +5,7 @@ from enum import Enum
 
 Base = declarative_base()
 
+
 class AccountDB(Base):
     __tablename__ = "accounts"
     __table_args__ = {"schema": "public"}
@@ -53,7 +54,9 @@ class MovementDB(Base):
 
     description = Column(String, nullable=False)
     amount = Column(Float, nullable=False)
-    type = Column(String, nullable=False)  # "credit"/"debit" (ideal: usar Enum a futuro)
+    type = Column(
+        String, nullable=False
+    )  # "credit"/"debit" (ideal: usar Enum a futuro)
 
 
 class PSETransactionDB(Base):
@@ -88,6 +91,3 @@ class PSETransactionDB(Base):
     expires_at = Column(DateTime, nullable=True)
 
     account = relationship("AccountDB", backref="pse_transactions")
-
-
- 

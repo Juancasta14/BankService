@@ -9,6 +9,7 @@ class SqlAlchemyUnitOfWork(UnitOfWork):
     """
     UoW para operaciones bancarias (transferencias, movimientos, cuentas)
     """
+
     def __init__(self, db: Session):
         self.db = db
         self.accounts = AccountsRepositorySqlAlchemy(db)
@@ -25,6 +26,7 @@ class SqlAlchemyPSEUnitOfWork(UnitOfWork):
     """
     UoW para flujos PSE (payments, callback, gateway)
     """
+
     def __init__(self, db: Session):
         self.db = db
         self.accounts = AccountRepositorySqlAlchemy(db)

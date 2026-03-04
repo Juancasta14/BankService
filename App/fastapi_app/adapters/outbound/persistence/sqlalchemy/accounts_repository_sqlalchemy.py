@@ -8,14 +8,12 @@ class AccountsRepositorySqlAlchemy(AccountsRepository):
         self.db = db
 
     def list_by_customer(self, customer_id: int):
-        return self.db.query(AccountDB).filter(
-            AccountDB.customer_id == customer_id
-        ).all()
+        return (
+            self.db.query(AccountDB).filter(AccountDB.customer_id == customer_id).all()
+        )
 
     def get(self, account_id: int):
-        return self.db.query(AccountDB).filter(
-            AccountDB.id == account_id
-        ).first()
+        return self.db.query(AccountDB).filter(AccountDB.id == account_id).first()
 
     def save(self, account: AccountDB) -> None:
         self.db.add(account)

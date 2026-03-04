@@ -3,6 +3,7 @@ from domain.auth.exceptions import Unauthorized
 from application.auth.ports.user_repository import UserRepository
 from application.auth.ports.token_service import TokenService
 
+
 @dataclass
 class AuthenticateService:
     users: UserRepository

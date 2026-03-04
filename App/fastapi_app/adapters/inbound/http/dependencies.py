@@ -3,12 +3,15 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from adapters.outbound.persistence.sqlalchemy.database import get_db
 
-from adapters.outbound.persistence.sqlalchemy.user_repository_sqlalchemy import UserRepositorySqlAlchemy
+from adapters.outbound.persistence.sqlalchemy.user_repository_sqlalchemy import (
+    UserRepositorySqlAlchemy,
+)
 from adapters.outbound.security.jwt_token_service import JwtTokenService
 from application.auth.services.authenticate_service import AuthenticateService
 from domain.auth.exceptions import Unauthorized
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
 
 def get_current_user(
     token: str = Depends(oauth2_scheme),

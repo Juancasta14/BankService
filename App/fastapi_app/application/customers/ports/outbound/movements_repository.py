@@ -1,5 +1,6 @@
 from typing import Protocol, Optional
 
+
 class MovementsRepository(Protocol):
     def list_by_customer(
         self,
@@ -7,5 +8,4 @@ class MovementsRepository(Protocol):
         account_type: Optional[str] = None,
         date_from: Optional[str] = None,
         date_to: Optional[str] = None,
-    ):
-        ...
+    ): ...
