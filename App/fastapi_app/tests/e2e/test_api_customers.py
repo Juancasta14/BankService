@@ -7,9 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 from main import app
 from adapters.inbound.http.dependencies import get_current_user
-from adapters.inbound.http.routes.customers import build_services
 from adapters.outbound.persistence.sqlalchemy.models import UserDB
-from adapters.inbound.http.dto.customer_dto import Account, Wallet
 
 # Mock objects to return from services
 class MockGetAccountsService:

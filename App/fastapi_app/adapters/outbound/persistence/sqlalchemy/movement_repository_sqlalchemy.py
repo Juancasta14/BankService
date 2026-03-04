@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 from application.pse.ports.outbound.movement_repository import MovementRepository
 from adapters.outbound.persistence.sqlalchemy.models import MovementDB
-from datetime import date
 
 
 class MovementRepositorySqlAlchemy(MovementRepository):

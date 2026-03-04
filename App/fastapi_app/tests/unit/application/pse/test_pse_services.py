@@ -6,7 +6,7 @@ from application.pse.services.get_payment_service import GetPSEPaymentService
 from application.pse.services.process_gateway_service import ProcessPSEGatewayService
 from application.pse.services.process_callback_service import ProcessPSECallbackService
 
-from tests.unit.application.pse.mock_uow_pse import MockPSEUnitOfWork, MockAccount, MockPSETransaction
+from tests.unit.application.pse.mock_uow_pse import MockPSEUnitOfWork, MockAccount
 
 @pytest.fixture
 def uow():

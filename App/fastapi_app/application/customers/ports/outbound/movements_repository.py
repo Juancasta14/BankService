@@ -1,4 +1,4 @@
-from typing import Protocol, Optional, List
+from typing import Protocol, Optional
 
 class MovementsRepository(Protocol):
     def list_by_customer(

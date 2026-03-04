@@ -1,4 +1,4 @@
-from typing import Protocol, Optional
+from typing import Protocol
 
 class AccountRepository(Protocol):
     def get(self, account_id: int):

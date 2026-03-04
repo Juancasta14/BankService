@@ -11,8 +11,6 @@ from adapters.inbound.http.routes.customers import router as customers_router
 
 
 
-from adapters.inbound.http.dependencies import get_current_user
-from adapters.outbound.persistence.sqlalchemy.models import UserDB
 
 
 

@@ -3,7 +3,6 @@ os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["LOGIN_EVENTS_URL"] = "http://mock"
 os.environ["LOGIN_EVENTS_SECRET"] = "mock"
 
-import pytest
 from fastapi.testclient import TestClient
 
 from main import app
