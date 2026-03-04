@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from application.pse.services.create_payment_service import CreatePSEPaymentService
 from application.pse.services.get_payment_service import GetPSEPaymentService
@@ -27,9 +27,9 @@ def uow():
         payment_url="",
         return_url_success="http://success",
         return_url_failure="http://fail",
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
-        expires_at=datetime.utcnow() + timedelta(minutes=10)
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=10)
     )
     uow.pse.add(tx)
     return uow
@@ -82,7 +82,7 @@ def test_get_payment_not_found(uow):
 def test_gateway_expired_transaction(uow):
     # set as expired
     tx = uow.pse.get_by_internal_order_id("PSE-12345")
-    tx.expires_at = datetime.utcnow() - timedelta(minutes=1)
+    tx.expires_at = datetime.now(timezone.utc) - timedelta(minutes=1)
     
     service = ProcessPSEGatewayService(uow=uow)
     result, url = service.process("PSE-12345")

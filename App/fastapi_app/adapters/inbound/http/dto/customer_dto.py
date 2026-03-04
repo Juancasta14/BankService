@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class Account(BaseModel):
@@ -8,8 +8,7 @@ class Account(BaseModel):
     type: str
     balance: float
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Wallet(BaseModel):
@@ -17,8 +16,7 @@ class Wallet(BaseModel):
     customer_id: int
     balance: float
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Movement(BaseModel):
@@ -28,8 +26,7 @@ class Movement(BaseModel):
     type: str  # "credito" / "debito"
     account_type: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CustomerSummary(BaseModel):

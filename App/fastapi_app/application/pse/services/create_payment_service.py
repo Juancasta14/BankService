@@ -1,10 +1,11 @@
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from typing import Any
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
 @dataclass
 class CreatePSEPaymentService:
-    uow: any  # UnitOfWork (si quieres tipado fuerte, lo ponemos)
+    uow: Any  # UnitOfWork
 
     def create_payment(
         self,
@@ -40,9 +41,9 @@ class CreatePSEPaymentService:
             payment_url="",
             return_url_success=return_url_success,
             return_url_failure=return_url_failure,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(minutes=15),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+            expires_at=datetime.now(timezone.utc) + timedelta(minutes=15),
         )
 
         self.uow.pse.add(tx)

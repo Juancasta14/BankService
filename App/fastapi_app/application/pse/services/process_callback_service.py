@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Any
 
 @dataclass
 class ProcessPSECallbackService:
-    uow: any  # SqlAlchemyPSEUnitOfWork
+    uow: Any  # SqlAlchemyPSEUnitOfWork
 
     def process_callback(
         self,
@@ -23,7 +24,7 @@ class ProcessPSECallbackService:
         tx.provider_tx_id = provider_tx_id
         tx.provider_reference = provider_reference
         tx.callback_status_raw = self.uow.pse.serialize_payload(raw_payload)
-        tx.updated_at = datetime.utcnow()
+        tx.updated_at = datetime.now(timezone.utc)
 
         # Si éxito, acreditar cuenta + movimiento
         if status.upper() == "SUCCESS":
@@ -33,7 +34,7 @@ class ProcessPSECallbackService:
 
             account.balance += tx.amount
 
-            today = datetime.utcnow().strftime("%Y-%m-%d")
+            today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
             self.uow.movements.add_credit(
                 account_id=account.id,
                 customer_id=account.customer_id,
