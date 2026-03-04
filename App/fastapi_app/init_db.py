@@ -2,9 +2,9 @@
 
 from sqlalchemy.orm import Session
 
-from database import SessionLocal, engine
+from adapters.outbound.persistence.sqlalchemy.database import SessionLocal, engine
 from models import Base, AccountDB, WalletDB, UserDB, MovementDB
-from security import hash_password
+from adapters.outbound.security.security import hash_password
 
 
 def init():

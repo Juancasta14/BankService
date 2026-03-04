@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database import get_db
+from adapters.outbound.persistence.sqlalchemy.database import get_db
 
 from adapters.outbound.persistence.sqlalchemy.unit_of_work_sqlalchemy import SqlAlchemyUnitOfWork
 from application.customers.services.transfer_service import TransferService

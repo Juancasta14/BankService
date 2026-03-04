@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from database import get_db
+from adapters.outbound.persistence.sqlalchemy.database import get_db
 from adapters.inbound.http.dependencies import get_current_user
 from adapters.inbound.http.dto.customer_dto import Account, Wallet, Movement, CustomerSummary
 
