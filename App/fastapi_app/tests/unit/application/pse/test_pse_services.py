@@ -80,6 +80,25 @@ def test_get_payment_not_found(uow):
 
 
 # --- PROCESS GATEWAY TESTS ---
+def test_gateway_transaction_not_found(uow):
+    service = ProcessPSEGatewayService(uow=uow)
+    with pytest.raises(ValueError, match="Transacci\u00f3n no encontrada"):
+        service.process("INVALID_TX_ID")
+
+
+def test_gateway_rejected_by_simulation(uow, monkeypatch):
+    # force 0% approval
+    monkeypatch.setattr("random.random", lambda: 0.99)
+    tx = uow.pse.get_by_internal_order_id("PSE-12345")
+
+    service = ProcessPSEGatewayService(uow=uow)
+    result, url = service.process("PSE-12345")
+
+    assert result == "failure"
+    assert url == "http://fail"
+    assert tx.status == "REJECTED"
+
+
 def test_gateway_expired_transaction(uow):
     # set as expired
     tx = uow.pse.get_by_internal_order_id("PSE-12345")
