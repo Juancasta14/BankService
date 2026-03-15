@@ -108,16 +108,16 @@ graph TD
     classDef system fill:#1168bd,color:#fff,stroke:#0b4884
     classDef external fill:#999,color:#fff,stroke:#666
 
-    User(["👤 Usuario / Cliente\n(Navega por el banco)"]):::person
-    PSE(["🏦 Pasarela PSE\n(Sistema externo de pagos)"]):::external
-    Lambda(["⚡ AWS Lambda\n(Servicio de notificaciones de login)"]):::external
+    User(["👤 Usuario / Cliente"]):::person
+    PSE(["🏦 Pasarela PSE"]):::external
+    Lambda(["⚡ AWS Lambda"]):::external
 
-    BankSystem["🏛️ BankService\n(Sistema Bancario Hexagonal)\n\nFastAPI + PostgreSQL"]:::system
+    BankSystem["🏛️ BankService - Sistema Bancario Hexagonal"]:::system
 
-    User -->|"Consultar cuentas,\ntransferir, pagar con PSE"| BankSystem
-    BankSystem -->|"Redirige al usuario\na pasarela real"| PSE
-    PSE -->|"Webhook callback\n(resultado del pago)"| BankSystem
-    BankSystem -->|"Notificar intento de login\n(éxito o fallo)"| Lambda
+    User -->|"Consultar cuentas, transferir, pagar con PSE"| BankSystem
+    BankSystem -->|"Redirige al usuario a pasarela real"| PSE
+    PSE -->|"Webhook callback resultado del pago"| BankSystem
+    BankSystem -->|"Notificar intento de login"| Lambda
 ```
 
 ---
@@ -135,18 +135,18 @@ graph TD
 
     User(["👤 Usuario"]):::person
     PSE(["🏦 Pasarela PSE"]):::external
-    Lambda(["⚡ AWS Lambda\nLogin Notifier"]):::external
+    Lambda(["⚡ AWS Lambda - Login Notifier"]):::external
 
-    Flask["🖥️ Flask App\n(Frontend Web)\nPuerto :80\n\nTemplates + Jinja2\nLlama a FastAPI via HTTP"]:::container
-    FastAPI["⚙️ FastAPI App\n(Backend API REST)\nPuerto :8000\n\nArquitectura Hexagonal\nUvicorn + SQLAlchemy"]:::container
-    DB[("🗄️ PostgreSQL\n(Supabase / Docker)\nPuerto :5432")]:::db
+    Flask["🖥️ Flask App - Puerto 80"]:::container
+    FastAPI["⚙️ FastAPI App - Puerto 8000"]:::container
+    DB[("🗄️ PostgreSQL - Supabase")]:::db
 
-    User -->|"HTTP (Navegador)"| Flask
-    Flask -->|"REST/JSON\nJWT Header"| FastAPI
+    User -->|"HTTP navegador"| Flask
+    Flask -->|"REST/JSON con JWT"| FastAPI
     User --->|"Redirección PSE"| FastAPI
     PSE -->|"POST /callback"| FastAPI
-    FastAPI -->|"SQL / ORM"| DB
-    FastAPI -->|"POST Eventos de Login"| Lambda
+    FastAPI -->|"SQL ORM"| DB
+    FastAPI -->|"POST eventos de login"| Lambda
 ```
 
 ---
@@ -164,19 +164,19 @@ graph TD
     classDef port fill:#607D8B,color:#fff,stroke:#37474F,stroke-dasharray: 5 5
 
     subgraph Inbound ["🔵 Adaptadores de Entrada (adapters/inbound/http/routes/)"]
-        AuthR["auth_routes.py\nPOST /auth/login"]:::inbound
-        CustR["customers.py\nGET /customers/{id}/..."]:::inbound
-        TransR["transfers.py\nPOST /customers/{id}/transfer"]:::inbound
-        PSEPay["pse_payments.py\nPOST /payments"]:::inbound
-        PSEGw["pse_gateway.py\nGET /pse-gateway/{id}"]:::inbound
-        PSECb["pse_callback.py\nPOST /callback"]:::inbound
-        PayQ["payments_query.py\nGET /payments/{id}"]:::inbound
+        AuthR["auth_routes.py — POST /auth/login"]:::inbound
+        CustR["customers.py — GET /customers"]:::inbound
+        TransR["transfers.py — POST /transfer"]:::inbound
+        PSEPay["pse_payments.py — POST /payments"]:::inbound
+        PSEGw["pse_gateway.py — GET /pse-gateway"]:::inbound
+        PSECb["pse_callback.py — POST /callback"]:::inbound
+        PayQ["payments_query.py — GET /payments"]:::inbound
     end
 
     subgraph Application ["🟢 Capa de Aplicación (application/)"]
-        LoginSvc["LoginService\nlogin_service.py"]:::app
-        AuthSvc["AuthenticateService\nauthenticate_service.py"]:::app
-        TransSvc["TransferService\ntransfer_service.py"]:::app
+        LoginSvc["LoginService"]:::app
+        AuthSvc["AuthenticateService"]:::app
+        TransSvc["TransferService"]:::app
         GetAccSvc["GetAccountsService"]:::app
         GetMovSvc["GetMovementsService"]:::app
         GetWalSvc["GetWalletService"]:::app
@@ -260,18 +260,22 @@ graph LR
     classDef inAdapter fill:#2196F3,color:#fff,stroke:#1565C0
     classDef outAdapter fill:#FF9800,color:#fff,stroke:#E65100
 
-    subgraph Externos_Izq ["Actores Primarios (Drivers)"]
-        Browser["🌐 Flask\nBrowser"]:::outer
-        PSEExt["🏦 PSE\nGateway"]:::outer
+    subgraph Externos_Izq ["Actores Primarios"]
+        Browser["🌐 Flask / Browser"]:::outer
+        PSEExt["🏦 PSE Gateway"]:::outer
     end
 
-    subgraph InboundAdapters ["Adaptadores de Entrada\n(adapters/inbound/http/)"]
+    subgraph InboundAdapters ["Adaptadores de Entrada"]
         AuthRoute["auth_routes.py"]:::inAdapter
-        CustRoute["customers.py\ntransfers.py"]:::inAdapter
-        PSERoute["pse_payments.py\npse_gateway.py\npse_callback.py\npayments_query.py"]:::inAdapter
+        CustRoute["customers.py"]:::inAdapter
+        TransRoute["transfers.py"]:::inAdapter
+        PSEPayRoute["pse_payments.py"]:::inAdapter
+        PSEGwRoute["pse_gateway.py"]:::inAdapter
+        PSECbRoute["pse_callback.py"]:::inAdapter
+        PayQRoute["payments_query.py"]:::inAdapter
     end
 
-    subgraph HexCore ["⬡  NÚCLEO HEXAGONAL"]
+    subgraph HexCore ["NUCLEO HEXAGONAL"]
         subgraph InPorts ["Puertos de Entrada"]
             ILogin["LoginService"]:::port
             IAuth["AuthenticateService"]:::port
@@ -279,11 +283,11 @@ graph LR
             IPSE["PSE Services"]:::port
         end
 
-        subgraph Domain ["Dominio\n(domain/)"]
-            DomCore["User · Account\nInsufficientFunds\nInvalidCredentials\nPSEExceptions"]:::domain
+        subgraph Domain ["Dominio (domain/)"]
+            DomCore["User - Account - InsufficientFunds - InvalidCredentials"]:::domain
         end
 
-        subgraph OutPorts ["Puertos de Salida (ABC/Protocol)"]
+        subgraph OutPorts ["Puertos de Salida"]
             PUserRepo["UserRepository"]:::port
             PAccRepo["AccountsRepository"]:::port
             PMovRepo["MovementsRepository"]:::port
@@ -296,35 +300,35 @@ graph LR
         end
     end
 
-    subgraph OutboundAdapters ["Adaptadores de Salida\n(adapters/outbound/persistence/sqlalchemy/)"]
-        SQLRepos["*RepositorySQLAlchemy\nUnitOfWorkSQLAlchemy"]:::outAdapter
-        JWTUtils["JWT & Hashing\n(python-jose, passlib)"]:::outAdapter
-        HTTPNotif["HTTP Notifier\n(AWS Lambda URL)"]:::outAdapter
+    subgraph OutboundAdapters ["Adaptadores de Salida"]
+        SQLRepos["SQLAlchemy Repositories"]:::outAdapter
+        JWTUtils["JWT and Hashing"]:::outAdapter
+        HTTPNotif["HTTP Notifier - AWS Lambda"]:::outAdapter
     end
 
-    subgraph Externos_Der ["Actores Secundarios (Driven)"]
-        PG[("🗄️ PostgreSQL\n(Supabase)")]:::outer
-        Lambda["⚡ AWS Lambda\nLogin Events"]:::outer
+    subgraph Externos_Der ["Actores Secundarios"]
+        PG[("🗄️ PostgreSQL - Supabase")]:::outer
+        Lambda["⚡ AWS Lambda Login Events"]:::outer
     end
 
-    Browser -->|"HTTP REST"| AuthRoute & CustRoute
-    PSEExt -->|"Webhook POST"| PSERoute
+    Browser -->|"HTTP REST"| AuthRoute & CustRoute & TransRoute
+    PSEExt -->|"Webhook POST"| PSECbRoute
 
     AuthRoute --> ILogin & IAuth
-    CustRoute --> ICustomer
-    PSERoute --> IPSE
+    CustRoute & TransRoute --> ICustomer
+    PSEPayRoute & PSEGwRoute & PSECbRoute & PayQRoute --> IPSE
 
-    ILogin & IAuth & ICustomer & IPSE --> Domain
+    ILogin & IAuth & ICustomer & IPSE --> DomCore
 
     ILogin --> PUserRepo & PHasher & PToken & PNotif
     IAuth --> PToken & PUserRepo
     ICustomer --> PAccRepo & PMovRepo & PWalRepo & PUoW
     IPSE --> PPseRepo & PAccRepo & PUoW
 
-    SQLRepos -.->|"implementa"| PUserRepo & PAccRepo & PMovRepo & PWalRepo & PPseRepo & PUoW
-    JWTUtils -.->|"implementa"| PHasher & PToken
-    HTTPNotif -.->|"implementa"| PNotif
+    SQLRepos -.->|implementa| PUserRepo & PAccRepo & PMovRepo & PWalRepo & PPseRepo & PUoW
+    JWTUtils -.->|implementa| PHasher & PToken
+    HTTPNotif -.->|implementa| PNotif
 
-    SQLRepos -->|"SQL/ORM"| PG
-    HTTPNotif -->|"POST"| Lambda
+    SQLRepos -->|SQL ORM| PG
+    HTTPNotif -->|POST| Lambda
 ```
