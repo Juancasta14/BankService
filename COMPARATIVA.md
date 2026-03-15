@@ -179,3 +179,88 @@ TOTAL TERCEROS:      ~5        fastapi, sqlalchemy, jose (python-jose),
 | **¿SQLAlchemy en las entidades?** | ✅ Sí (los modelos ORM *son* las entidades) | ❌ No |
 | **Costo de cambiar de FastAPI a otro framework** | Reescribir `main.py` completo (444 LOC) | Reemplazar solo `adapters/inbound/http/` |
 | **Costo de cambiar de SQLAlchemy a otro ORM** | Reescribir `main.py` + `models.py` (689 LOC) | Reemplazar solo `adapters/outbound/persistence/sqlalchemy/` |
+
+---
+
+## 🧪 Simulación: Añadir una Nueva Funcionalidad
+
+> **Escenario:** El banco quiere agregar **notificaciones por email cuando una transferencia es exitosa**.
+> El email debe enviarse después de que el dinero se mueva correctamente entre cuentas.
+
+---
+
+### 🔴 En el Monolito (`Banco_monolitico`)
+
+Toda la lógica vive en `main.py`. Para añadir la notificación habría que:
+
+| # | Archivo a modificar | Qué cambiar |
+|---|---|---|
+| 1 | `main.py` | Importar librería de email (`smtplib` o `sendgrid`) |
+| 2 | `main.py` | Agregar configuración SMTP dentro del mismo archivo |
+| 3 | `main.py` | Modificar la función `transfer()` para llamar al envío de email tras el commit |
+| 4 | `main.py` | Agregar manejo de errores del email (si falla el email, ¿falla la transferencia?) |
+| 5 | `tests/test_main.py` | Mockear el servicio de email en todos los tests de transferencia existentes |
+
+**Total archivos modificados: 2** (`main.py` + `test_main.py`)
+**Riesgo:** ⚠️ Alto — tocar `main.py` (444 LOC) puede romper rutas de autenticación, PSE o consultas no relacionadas. No hay separación de contextos.
+
+```
+ANTES                          DESPUÉS
+──────────────────────         ──────────────────────────────────────
+main.py                        main.py  ← MODIFICADO (frágil, 444 LOC)
+  ├─ /auth/login                 ├─ /auth/login
+  ├─ /customers/...              ├─ /customers/...
+  ├─ /transfer ← lógica aquí    ├─ /transfer ← + lógica email aquí
+  └─ /payments/...              └─ /payments/...
+```
+
+---
+
+### 🟢 En la Arquitectura Hexagonal (`BankService`)
+
+El patrón Ports & Adapters permite añadir la funcionalidad **sin tocar el código existente** (Principio Open/Closed):
+
+| # | Archivo a crear/modificar | Qué hacer |
+|---|---|---|
+| 1 | `application/customers/ports/outbound/`**`email_notifier.py`** *(NUEVO)* | Definir el contrato: `class EmailNotifier(Protocol): def send_transfer_confirmation(...) -> None` |
+| 2 | `application/customers/services/transfer_service.py` *(MODIFICAR)* | Inyectar `EmailNotifier` como dependencia y llamarla al finalizar la transferencia |
+| 3 | `adapters/outbound/notifications/`**`sendgrid_email_notifier.py`** *(NUEVO)* | Implementar el envío real con SendGrid/SMTP |
+| 4 | `main.py` *(MODIFICAR)* | Inyectar el nuevo adaptador en el `TransferService` |
+| 5 | `tests/unit/application/customers/`**`mock_ports.py`** *(NUEVO o MODIFICAR)* | Agregar `MockEmailNotifier` para los tests unitarios |
+| 6 | `tests/unit/application/customers/test_transfer_service.py` *(MODIFICAR)* | Añadir test: verificar que el notificador se llama al transferir |
+
+**Total archivos modificados/creados: 4 modificados + 2 nuevos = 6**
+**Riesgo:** ✅ Bajo — `TransferService` solo cambia para recibir una nueva dependencia. Rutas HTTP, PSE, Auth y consultas **no se tocan**. Si el email falla, se puede manejar en silencio dentro del adaptador sin afectar la transferencia.
+
+```
+ANTES                                    DESPUÉS
+──────────────────────────────           ──────────────────────────────────────────
+domain/                                  domain/                 (sin cambios)
+application/
+  customers/
+    ports/outbound/
+      accounts_repository.py             application/
+      movements_repository.py              customers/
+      wallets_repository.py                 ports/outbound/
+    services/                                 ...existentes...    (sin cambios)
+      transfer_service.py                     email_notifier.py  ← NUEVO (contrato)
+                                          services/
+adapters/outbound/                          transfer_service.py  ← MODIFICADO
+  persistence/sqlalchemy/...            adapters/outbound/
+                                          notifications/
+                                            sendgrid_email_notifier.py ← NUEVO
+                                        main.py                 ← MODIFICADO (1 línea)
+```
+
+---
+
+### 📊 Comparativa Final de la Simulación
+
+| Métrica | Monolito | Hexagonal |
+|---|---|---|
+| **Archivos modificados** | 2 (ambos grandes) | 2 existentes + 2 nuevos |
+| **Archivos de riesgo** | `main.py` (444 LOC) — contiene TODO | Solo `transfer_service.py` y `main.py` (wiring) |
+| **Código existente roto potencialmente** | Rutas de Auth, PSE y consultas en peligro | Ninguno fuera del contexto de transferencias |
+| **Posibilidad de fallar en CI** | Alta — pueden romperse tests de endpoints no relacionados | Baja — solo los tests de `TransferService` se ven afectados |
+| **¿Se puede probar el email sin DB?** | ❌ No — los tests de `main.py` requieren SQLite activo | ✅ Sí — `MockEmailNotifier` es un objeto en RAM |
+| **¿Cambiamos SendGrid por otro proveedor luego?** | Modificar `main.py` nuevamente | Crear nuevo adaptador, no tocar lógica de negocio |
