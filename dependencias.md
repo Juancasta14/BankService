@@ -45,9 +45,13 @@ graph TD
     %% ----------------------------------------------------
     %% Anotaciones de Violaciones de Arquitectura Hexagonal
     %% ----------------------------------------------------
-    note right of main : ❌ Violación Hexagonal:\nmain.py mezcla enrutamiento HTTP (Adaptador) con\nlógica de negocio (Casos de Uso).
-    note bottom of models : ❌ Violación Hexagonal:\nmodels.py mezcla el Dominio (Pydantic)\ncon la Infraestructura ORM (SQLAlchemy).
-    note left of main : ❌ Violación de Inversión de Dependencias:\nmain.py depende directamente de infraestructura\n(db_conn y queries ORM) en vez de abstraerse con Puertos.
+    v1(❌ Violación Hexagonal:<br>main.py mezcla enrutamiento HTTP Adaptador<br>con lógica de negocio Casos de Uso.):::violation
+    v2(❌ Violación Hexagonal:<br>models.py mezcla el Dominio Pydantic<br>con la Infraestructura ORM SQLAlchemy.):::violation
+    v3(❌ Violación D.I.:<br>main.py depende de infraestructura directamente<br>en vez de usar Puertos e Interfaces.):::violation
+
+    main -.-> v1
+    models -.-> v2
+    main -.-> v3
 ```
 
 ## Descripción de Componentes
