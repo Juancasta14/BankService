@@ -22,3 +22,10 @@ pgdata/
 
 # Docker compose volumes
 volumes/
+
+# Pytest and coverage
+.coverage
+.pytest_cache/
+coverage_report.txt
+coverage_result.txt
+test_output.txt
