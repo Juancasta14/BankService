@@ -7,6 +7,7 @@ graph TD
     classDef frontend fill:#dcebff,stroke:#4c8dff,stroke-width:2px;
     classDef backend fill:#e8f4f8,stroke:#17a2b8,stroke-width:2px;
     classDef external fill:#fcf3cf,stroke:#f1c40f,stroke-width:2px;
+    classDef violation fill:#f8d7da,stroke:#dc3545,stroke-width:2px,color:#721c24,stroke-dasharray: 5 5;
 
     subgraph Frontend ["Frontend (Flask)"]
         flask[Flask App<br><code>app.py</code>]:::frontend
@@ -40,6 +41,13 @@ graph TD
     %% DB y ORM
     db_conn -- "Conexión psycopg2" --> pg
     models -. "SQLAlchemy ORM" .-> db_conn
+
+    %% ----------------------------------------------------
+    %% Anotaciones de Violaciones de Arquitectura Hexagonal
+    %% ----------------------------------------------------
+    note right of main : ❌ Violación Hexagonal:\nmain.py mezcla enrutamiento HTTP (Adaptador) con\nlógica de negocio (Casos de Uso).
+    note bottom of models : ❌ Violación Hexagonal:\nmodels.py mezcla el Dominio (Pydantic)\ncon la Infraestructura ORM (SQLAlchemy).
+    note left of main : ❌ Violación de Inversión de Dependencias:\nmain.py depende directamente de infraestructura\n(db_conn y queries ORM) en vez de abstraerse con Puertos.
 ```
 
 ## Descripción de Componentes
