@@ -29,5 +29,6 @@ jobs:
       working-directory: ./App/fastapi_app
       env:
         PYTHONPATH: .
+        DB_PROVIDER: memory
       run: |
         pytest --cov=application --cov=domain --cov-report=term-missing tests/
