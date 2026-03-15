@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from uuid import uuid4
 from fastapi.responses import RedirectResponse
 import random
+import json
 
 from database import get_db, engine
 from models import (
@@ -34,9 +35,6 @@ from models import (
 from security import verify_password, create_access_token
 
 app = FastAPI(title="Bank Service with Auth")
-
-# Crear tablas (accounts, wallets, users...)
-Base.metadata.create_all(bind=engine)
 
 # Donde FastAPI “cree” que está el endpoint de login
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")

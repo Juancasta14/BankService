@@ -3,6 +3,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 import sys
 import os
@@ -17,7 +18,9 @@ from security import hash_password
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -274,7 +277,7 @@ def test_pse_gateway_valid_transaction():
     order_id = test_create_pse_payment_success()
     
     # Hit the gateway (simulates PSE approval/rejection)
-    response = client.get(f"/pse-gateway/{order_id}", allow_redirects=False)
+    response = client.get(f"/pse-gateway/{order_id}", follow_redirects=False)
     
     # Because of random approval (90%), it will redirect to either success or failure URL
     assert response.status_code in [302, 303, 307]
@@ -327,7 +330,7 @@ def test_create_pse_payment_account_not_found():
     assert "Cuenta de origen no encontrada" in response.json()["detail"]
 
 def test_pse_gateway_not_found():
-    response = client.get("/pse-gateway/MISSING_ORDER_ID", allow_redirects=False)
+    response = client.get("/pse-gateway/MISSING_ORDER_ID", follow_redirects=False)
     assert response.status_code == 404
 
 def test_pse_gateway_expired():
@@ -341,7 +344,7 @@ def test_pse_gateway_expired():
     db.commit()
     db.close()
     
-    response = client.get(f"/pse-gateway/{order_id}", allow_redirects=False)
+    response = client.get(f"/pse-gateway/{order_id}", follow_redirects=False)
     # the code redirects to return_url_failure
     assert response.status_code in [302, 303, 307]
     assert "http://failure" in response.headers["location"]
@@ -355,7 +358,7 @@ def test_pse_gateway_account_not_found():
     db.commit()
     db.close()
     
-    response = client.get(f"/pse-gateway/{order_id}", allow_redirects=False)
+    response = client.get(f"/pse-gateway/{order_id}", follow_redirects=False)
     assert response.status_code == 404
     assert "Cuenta de origen" in response.json()["detail"]
 
@@ -385,7 +388,7 @@ def test_pse_gateway_insufficient_funds_on_approve():
     db.close()
     
     # gateway attempts to pull $300 but there's only $0 -> reject
-    response = client.get(f"/pse-gateway/{order_id}", allow_redirects=False)
+    response = client.get(f"/pse-gateway/{order_id}", follow_redirects=False)
     # The code redirects to return_url_failure when account.balance < tx.amount
     assert response.status_code in [302, 303, 307]
     assert "http://failure" in response.headers["location"]
