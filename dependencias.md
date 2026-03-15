@@ -26,21 +26,21 @@ graph TD
     end
 
     %% Relaciones Principales
-    flask -- "HTTP Requests (REST)" --> main
+    flask -->|"HTTP Requests (REST)"| main
 
     %% Dependencias Internas FastAPI
-    main -- "Verificación / Creación JWT" --> security
-    main -- "Modelos y Consultas" --> models
-    main -- "Dependencia (get_db)" --> db_conn
+    main -->|"Verificación / Creación JWT"| security
+    main -->|"Modelos y Consultas"| models
+    main -->|"Dependencia (get_db)"| db_conn
 
     %% Dependencias init_db
-    init_db -- "Creación Tablas e Instancias" --> models
-    init_db -- "Conexión a BD" --> db_conn
-    init_db -- "Contraseñas Seguras" --> security
+    init_db -->|"Creación Tablas e Instancias"| models
+    init_db -->|"Conexión a BD"| db_conn
+    init_db -->|"Contraseñas Seguras"| security
 
     %% DB y ORM
-    db_conn -- "Conexión psycopg2" --> pg
-    models -. "SQLAlchemy ORM" .-> db_conn
+    db_conn -->|"Conexión psycopg2"| pg
+    models -.->|"SQLAlchemy ORM"| db_conn
 
     %% ----------------------------------------------------
     %% Anotaciones de Violaciones de Arquitectura Hexagonal
