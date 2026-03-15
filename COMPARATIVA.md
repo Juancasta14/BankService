@@ -31,3 +31,30 @@ A continuación se presenta la tabla comparativa entre la implementación monol�
   - El **Dominio** (Reglas core de negocio) posee **0 dependencias externas** (Ni FastAPI ni SQLAlchemy).
   - La **Aplicación** (Casos de uso) depende netamente del Dominio.
   - Los **Adaptadores** son los únicos que tienen "permiso" para depender de librerías externas o frameworks como FastAPI o HTTP/Bases de Datos.
+
+---
+
+### Decisiones de Diseño Core: ¿POR QUÉ se diseñó así? (Frente al Monolito)
+
+En el proyecto monolítico original (`Banco_monolitico`), las decisiones solían tomarse alrededor del framework principal (FastAPI y SQLAlchemy). Aquí explicamos **por qué** la Arquitectura Hexagonal introduce y moldea sus componentes de otra manera.
+
+#### 1. Entidades (Domain Entities)
+*En el monolito, las "entidades" eran los mismos modelos de SQLAlchemy (ej. `class User(Base)`), combinando reglas de negocio con detalles de cómo guardar en base de datos. Si se reestructuraba la tabla, se rompía la regla de negocio.*
+
+**¿POR QUÉ el nuevo diseño?**
+- **Para proteger la ignorancia de persistencia:** Nuestras nuevas Entidades de Dominio (`User`, `Account`, etc.) se diseñaron como clases puras (`@dataclass` de Python). La decisión de remover la herencia de `Base` (SQLAlchemy) en el dominio fue **obligada** para garantizar que un cambio de base de datos (Ej: migrar a MongoDB o PostgreSQL) jamás te obligue a reescribir la lógica de cómo se crea una cuenta o se valida un saldo insuficiente. 
+- **Para encapsular invariantes:** Al no depender de Pydantic ni FastAPI en el dominio, pudimos crear métodos limpios (`account.withdraw(amount)`) que contienen el 100% de la regla de la transferencia (por qué y cuándo es válida), impidiendo que otra capa modifique el saldo directamente como ocurría en el `main.py` monolítico.
+
+#### 2. Objetos de Valor (Value Objects)
+*En el monolito, conceptos dependientes (como `Currency`, o un `Amount` con su divisa) simplemente flotaban como `string` o `float` por todo el enrutador. Un error tipográfico (`"COP "` vs `"COP"`) o un float negativo provocaban un IF gigante en el controller.*
+
+**¿POR QUÉ el nuevo diseño?**
+- **Para eliminar la Validación Condicional Dispersa (Defensive Programming):** Los objetos de valor (conceptos inmutables como `Amount = -100` que jamás deberían existir sin validarse solos) se modelan en el dominio. Se diseñan así para que al construir, por ejemplo, un "Dinero" o "Divisa", se valide y congele (`frozen`) automáticamente.
+- **Por qué son inmutables:** Decidimos hacerlos inmutables para no rastrear su estado de forma incierta (a un billete de $500 no le puedes cambiar el número a $1000 físicamente), si necesitas otro valor, se instancia un objeto nuevo. Esto previene bugs de referencia cruzada.
+
+#### 3. Puertos (Inbound y Outbound Ports)
+*En el monolito no existían. El caso de uso HTTP directamente importaba el archivo `models.py` y requería la sesión de SQLAlchemy obligatoriamente para existir.*
+
+**¿POR QUÉ el nuevo diseño de Puertos?**
+- **Inversión de Control (Puertos Outbound):** Diseñamos `class UserRepository(ABC):` puramente con firmas abstractas **porque** necesitábamos que la capa de Casos de Uso (Application) nunca conociera SQL o si existe un ORM siquiera. Al forzar que el caso de uso dependa de un contrato (`Interface`) y no de una implementación (`models.py`), creamos la posiblidad de que las **pruebas pasaran de requerir una Base de Datos física (lento) a solo requerir un diccionario en memoria (ultra-rápido en 1ms)**.
+- **Mecanismos de Intercambio (Puertos Inbound):** Los casos de uso (ej. `TransferService`) se crearon encapsulando el QUÉ hace el proyecto en vez de usar directamente los *routers* de Pydantic. Tomamos esta decisión **para habilitar múltiples interfaces de usuario**. En el monolito, si querías activar una transferencia por Terminal CLI o Telegram, no podías, porque el código dependía de recibir peticiones web (HTTP Request). Al introducir casos de uso como puertos Inbound, la operación de transferir podría ser disparada tanto vía API Web como desde una tarea `Cron`/Script sin cambiar la regla de negocio.
