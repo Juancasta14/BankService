@@ -44,10 +44,17 @@ Write-Host "`n=========================================" -ForegroundColor Cyan
 if ($testExitCode -eq 0) {
     Write-Host "¡Todos los tests pasaron exitosamente! 🎉" -ForegroundColor Green
     Write-Host ""
-    Write-Host "Nota sobre las advertencias (Warnings):" -ForegroundColor Yellow
-    Write-Host "- Pydantic V2: Pide usar 'model_config' en lugar de 'class Config:'." -ForegroundColor Gray
-    Write-Host "- Datetime: 'datetime.utcnow()' está obsoleto, recomienda 'datetime.now(datetime.UTC)'." -ForegroundColor Gray
-    Write-Host "- Pytest return: Advierte que un test está devolviendo un valor (order_id) en vez de None." -ForegroundColor Gray
+    Write-Host "--- DETALLE DE ADVERTENCIAS (WARNINGS) ---" -ForegroundColor Yellow
+    Write-Host "Los warnings mostrados arriba no son errores, el codigo funciona perfecto. Solo son avisos de librerias sobre sintaxis que cambiara en versiones futuras:" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "1. Pydantic V2 (PydanticDeprecatedSince20):" -ForegroundColor Cyan
+    Write-Host "   Pydantic actualizo su sintaxis. En models.py se usa 'class Config:' dentro de los modelos, pero la version nueva de la libreria pide usar 'model_config = ConfigDict(...)'. Se recomiendan actualizar esos modelos a futuro." -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "2. Tiempos (DeprecationWarning de datetime):" -ForegroundColor Cyan
+    Write-Host "   En security.py y main.py se usa 'datetime.utcnow()'. Python 3.12+ marco esto como obsoleto porque no guarda la zona horaria adecuadamente. Recomiendan usar 'datetime.now(datetime.UTC)' en proximas refactorizaciones." -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "3. Retorno en Pruebas (PytestReturnNotNoneWarning):" -ForegroundColor Cyan
+    Write-Host "   El test 'test_create_pse_payment_success' retorna el 'order_id' como cadena de texto. Pytest advierte que las funciones de test idealmente no deberian retornar valores, solo ejecutar 'asserts'." -ForegroundColor Gray
 } else {
     Write-Host "Algunos tests fallaron. Revisa el log de arriba. ❌" -ForegroundColor Red
 }
