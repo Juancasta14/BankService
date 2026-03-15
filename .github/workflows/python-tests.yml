@@ -5,6 +5,7 @@ on:
     branches: [ "Hexagonal", "main", "master" ]
   pull_request:
     branches: [ "Hexagonal", "main", "master" ]
+  workflow_dispatch:
 
 jobs:
   build-and-test:
