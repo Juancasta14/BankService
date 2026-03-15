@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from models import Base
+from adapters.outbound.persistence.sqlalchemy.models import Base
 from adapters.outbound.persistence.sqlalchemy.database import engine
 from adapters.inbound.http.routes.auth_routes import router as auth_router
 from adapters.inbound.http.routes.transfers import router as transfer_router

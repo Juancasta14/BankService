@@ -3,7 +3,7 @@
 from sqlalchemy.orm import Session
 
 from adapters.outbound.persistence.sqlalchemy.database import SessionLocal, engine
-from models import Base, AccountDB, WalletDB, UserDB, MovementDB
+from adapters.outbound.persistence.sqlalchemy.models import Base, AccountDB, WalletDB, UserDB, MovementDB
 from adapters.outbound.security.security import hash_password
 
 
