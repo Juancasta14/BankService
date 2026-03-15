@@ -186,3 +186,59 @@ La documentación interactiva (Swagger UI) estará disponible en [http://localho
 | Tiempo de ejecución | **~1.16 segundos** |
 
 Para la comparativa completa con el sistema monolítico anterior, ver [COMPARATIVA.md](./COMPARATIVA.md).
+
+---
+
+## ✅ Checklist de Despliegue en Modo Real
+
+Sigue esta lista paso a paso para desplegar el proyecto desde cero en un entorno real:
+
+### 🔧 Prerrequisitos
+- [ ] Instalar **Python 3.11+** en el sistema
+- [ ] Instalar **Docker Desktop** y verificar que esté corriendo (`docker --version`)
+- [ ] Tener acceso a una instancia de **PostgreSQL** (local, Docker o Supabase)
+
+### 📁 Preparación del Proyecto
+- [ ] Clonar el repositorio: `git clone https://github.com/Juancasta14/BankService.git`
+- [ ] Entrar a la carpeta: `cd BankService`
+- [ ] Crear un entorno virtual: `python -m venv .venv`
+- [ ] Activar el entorno virtual: `.\.venv\Scripts\Activate.ps1` (Windows) o `source .venv/bin/activate` (Linux/Mac)
+- [ ] Instalar dependencias: `pip install -r App/fastapi_app/requirements.txt`
+
+### 🔐 Configuración de Variables de Entorno
+- [ ] Copiar o crear el archivo `App/.env`
+- [ ] Configurar `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME` con tus credenciales
+- [ ] Configurar `LOGIN_EVENTS_SECRET` con una clave secreta segura
+- [ ] (Opcional) Configurar `LOGIN_EVENTS_URL` si usas el notificador de logins en AWS Lambda
+- [ ] Verificar que el archivo `.env` **NO** esté versionado en git
+
+### 🗄️ Base de Datos
+- [ ] Asegurarte que PostgreSQL esté accesible desde el servidor
+- [ ] Verificar la conexión: `psql -h $DB_HOST -U $DB_USER -d $DB_NAME`
+- [ ] Las tablas se crean **automáticamente** al arrancar la app (`Base.metadata.create_all`)
+- [ ] (Opcional) Cargar datos de prueba iniciales: `python App/fastapi_app/init_db.py`
+
+### 🐳 Despliegue con Docker Compose
+- [ ] Entrar a la carpeta `App`: `cd App`
+- [ ] Construir y levantar los servicios: `docker-compose up --build -d`
+- [ ] Verificar que los contenedores están corriendo: `docker ps`
+- [ ] Comprobar logs del backend: `docker logs banco_fastapi`
+- [ ] Comprobar logs del frontend: `docker logs banco_flask`
+
+### 🌐 Verificación Final
+- [ ] Abrir Swagger UI en el navegador: [http://localhost:8000/docs](http://localhost:8000/docs)
+- [ ] Probar el endpoint `POST /auth/login` con usuario y contraseña
+- [ ] Probar un endpoint protegido con el token JWT recibido
+- [ ] Abrir el frontend Flask: [http://localhost:80](http://localhost:80)
+- [ ] Verificar que el frontend puede autenticarse y consume la API correctamente
+
+### 🧪 Verificación de Tests (Opcional pero recomendado)
+- [ ] Ejecutar la suite de pruebas: `cd App/fastapi_app && .\run_tests_with_coverage.ps1`
+- [ ] Confirmar que los **40 tests pasan** y la cobertura es del **100%**
+
+### 🔒 Consideraciones de Seguridad para Producción
+- [ ] Cambiar el `SECRET_KEY` del JWT a una clave segura y aleatoria
+- [ ] Configurar HTTPS (SSL/TLS) delante de los contenedores (nginx, Caddy, etc.)
+- [ ] Restringir los CORS en `main.py` al dominio de producción
+- [ ] Usar un gestor de secretos (AWS Secrets Manager, etc.) en lugar del `.env` plano
+- [ ] Configurar límites de rate limiting en el endpoint de login
