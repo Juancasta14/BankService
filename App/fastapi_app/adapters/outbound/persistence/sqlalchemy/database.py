@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 #  Allowed values: "postgres" | "supabase" | "memory"
 #  Set in .env or docker-compose environment section.
 # ─────────────────────────────────────────────────────────────────
-DB_PROVIDER = os.getenv("DB_PROVIDER", "postgres").lower()
+DB_PROVIDER = os.getenv("DB_PROVIDER", "supabase").lower()
 
 connect_args = {}
 

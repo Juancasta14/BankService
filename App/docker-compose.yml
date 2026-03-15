@@ -26,7 +26,7 @@ services:
       # "postgres"  → PostgreSQL local (descomentar bloque #db arriba)
       # "supabase"  → Supabase remoto con SSL (credenciales en .env)
       # "memory"    → SQLite en RAM (sin BD, solo para pruebas rápidas)
-      DB_PROVIDER: postgres      # ← CAMBIAR AQUÍ
+      DB_PROVIDER: supabase      # ← CAMBIAR AQUÍ
 
       # ── Variables para DB_PROVIDER=postgres ────────────────────────
       #DB_USER: banco_user
