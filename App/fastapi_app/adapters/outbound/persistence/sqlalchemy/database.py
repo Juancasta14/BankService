@@ -1,15 +1,16 @@
 import os
+import sys
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from typing import Any
 
 # ─────────────────────────────────────────────────────────────────
 #  DB_PROVIDER switch
 #  Allowed values: "postgres" | "supabase" | "memory"
 #  Set in .env or docker-compose environment section.
 # ─────────────────────────────────────────────────────────────────
-from typing import Any
-
 DB_PROVIDER = os.getenv("DB_PROVIDER", "supabase").lower()
+print(f"DEBUG: database.py loaded with DB_PROVIDER={DB_PROVIDER}", file=sys.stderr)
 
 connect_args: dict[str, Any] = {}
 
