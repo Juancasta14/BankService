@@ -4,8 +4,8 @@ A continuación se presenta el diagrama de dependencias del proyecto, separando 
 
 ```mermaid
 graph TD
-    classDef frontend fill:#dcebff,stroke:#4c8dff,stroke-width:2px;
-    classDef backend fill:#e8f4f8,stroke:#17a2b8,stroke-width:2px;
+    classDef frontend fill:#dcebff,stroke:#4c8dff,stroke-width:2px,color:#000000;
+    classDef backend fill:#e8f4f8,stroke:#17a2b8,stroke-width:2px,color:#000000;
     classDef external fill:#fcf3cf,stroke:#f1c40f,stroke-width:2px;
     classDef violation fill:#f8d7da,stroke:#dc3545,stroke-width:2px,color:#721c24,stroke-dasharray: 5 5;
 
@@ -33,10 +33,11 @@ graph TD
     main -->|"Modelos y Consultas"| models
     main -->|"Dependencia (get_db)"| db_conn
 
-    %% Dependencias init_db
-    init_db -->|"Creación Tablas e Instancias"| models
-    init_db -->|"Conexión a BD"| db_conn
-    init_db -->|"Contraseñas Seguras"| security
+    %% Dependencias init_db (Usando enlaces curvos o invisibles para organizar mejor)
+    init_db ~~~ db_conn
+    init_db -.->|"Creación Tablas e Instancias"| models
+    init_db -.->|"Conexión a BD"| db_conn
+    init_db -.->|"Contraseñas Seguras"| security
 
     %% DB y ORM
     db_conn -->|"Conexión psycopg2"| pg
@@ -48,10 +49,12 @@ graph TD
     v1(❌ Violación Hexagonal:<br>main.py mezcla enrutamiento HTTP Adaptador<br>con lógica de negocio Casos de Uso.):::violation
     v2(❌ Violación Hexagonal:<br>models.py mezcla el Dominio Pydantic<br>con la Infraestructura ORM SQLAlchemy.):::violation
     v3(❌ Violación D.I.:<br>main.py depende de infraestructura directamente<br>en vez de usar Puertos e Interfaces.):::violation
+    v4(❌ Ausencia de Capa de Aplicación:<br>No existen servicios o manejadores de comandos,<br>todo reside en controladores o utilidades.):::violation
 
     main -.-> v1
     models -.-> v2
     main -.-> v3
+    main -.-> v4
 ```
 
 ## Descripción de Componentes
