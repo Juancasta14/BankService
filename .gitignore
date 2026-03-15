@@ -176,3 +176,10 @@ Thumbs.db
 # Logs
 logs/
 *.log
+
+# Archivos temporales de debugging (generados por run_tests.ps1 u otros scripts)
+tb.txt
+tb2.txt
+tests_output.txt
+error.txt
+import_test.txt
