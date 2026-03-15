@@ -2,13 +2,18 @@ from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship, declarative_base
 from datetime import datetime
 from enum import Enum
+import os
 
 Base = declarative_base()
+
+# SQLite (provider="memory") no soporta esquemas (schemas)
+DB_PROVIDER = os.getenv("DB_PROVIDER", "supabase").lower()
+SCHEMA = "public" if DB_PROVIDER != "memory" else None
 
 
 class AccountDB(Base):
     __tablename__ = "accounts"
-    __table_args__ = {"schema": "public"}
+    __table_args__ = {"schema": SCHEMA} if SCHEMA else {}
 
     id = Column(Integer, primary_key=True, index=True)
     customer_id = Column(Integer, index=True, nullable=False)
@@ -25,7 +30,7 @@ class MovementType(str, Enum):
 
 class WalletDB(Base):
     __tablename__ = "wallets"
-    __table_args__ = {"schema": "public"}
+    __table_args__ = {"schema": SCHEMA} if SCHEMA else {}
 
     id = Column(Integer, primary_key=True, index=True)
     customer_id = Column(Integer, index=True, nullable=False)
@@ -34,7 +39,7 @@ class WalletDB(Base):
 
 class UserDB(Base):
     __tablename__ = "users"
-    __table_args__ = {"schema": "public"}
+    __table_args__ = {"schema": SCHEMA} if SCHEMA else {}
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
@@ -43,7 +48,7 @@ class UserDB(Base):
 
 class MovementDB(Base):
     __tablename__ = "movements"
-    __table_args__ = {"schema": "public"}
+    __table_args__ = {"schema": SCHEMA} if SCHEMA else {}
 
     id = Column(Integer, primary_key=True, index=True)
     account_id = Column(Integer, nullable=False)
@@ -61,7 +66,7 @@ class MovementDB(Base):
 
 class PSETransactionDB(Base):
     __tablename__ = "pse_transactions"
-    __table_args__ = {"schema": "public"}
+    __table_args__ = {"schema": SCHEMA} if SCHEMA else {}
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -69,7 +74,7 @@ class PSETransactionDB(Base):
 
     customer_id = Column(Integer, index=True, nullable=False)
 
-    account_id = Column(Integer, ForeignKey("public.accounts.id"), nullable=False)
+    account_id = Column(Integer, ForeignKey(f"{SCHEMA}.accounts.id" if SCHEMA else "accounts.id"), nullable=False)
 
     amount = Column(Float, nullable=False)
     currency = Column(String(10), nullable=False, default="COP")
