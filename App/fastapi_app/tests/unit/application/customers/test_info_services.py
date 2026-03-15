@@ -1,6 +1,9 @@
 import pytest
 from dataclasses import dataclass
 
+from application.customers.ports.outbound.movements_repository import MovementsRepository
+from application.customers.ports.outbound.wallets_repository import WalletsRepository
+
 from application.customers.services.get_accounts_service import GetAccountsService
 from application.customers.services.get_movements_service import GetMovementsService
 from application.customers.services.get_wallet_service import GetWalletService

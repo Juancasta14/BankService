@@ -63,3 +63,18 @@ def test_login_user_not_found_raises_exception(login_service: LoginService):
     assert len(notifier.notifications) == 1
     assert notifier.notifications[0]["success"] is False
     assert notifier.notifications[0]["username"] == "unknownuser"
+
+
+def test_login_notifier_exception_handled_gracefully(login_service: LoginService, monkeypatch):
+    # Force exception in notifier to cover the except block
+    def mock_notify(*args, **kwargs):
+        raise Exception("Failed to notify")
+
+    monkeypatch.setattr(login_service.notifier, "notify_login", mock_notify)
+
+    # Should succeed regardless of notification failure
+    result = login_service.login(
+        username="testuser", password="mypassword", ip="127.0.0.1", user_agent="pytest"
+    )
+
+    assert result["username"] == "testuser"

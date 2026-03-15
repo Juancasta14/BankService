@@ -200,3 +200,19 @@ def test_callback_not_found(uow):
             provider_reference=None,
             raw_payload=None,
         )
+
+
+def test_callback_success_account_not_found(uow):
+    service = ProcessPSECallbackService(uow=uow)
+    tx = uow.pse.get_by_internal_order_id("PSE-12345")
+    # Invalidate the account to trigger the edge case
+    tx.account_id = 999 
+
+    with pytest.raises(ValueError, match="Cuenta asociada no existe"):
+        service.process_callback(
+            internal_order_id="PSE-12345",
+            status="SUCCESS",
+            provider_tx_id="prov-1",
+            provider_reference="123",
+            raw_payload={"foo": "bar"},
+        )
