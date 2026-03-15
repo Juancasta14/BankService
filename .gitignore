@@ -34,18 +34,25 @@ ENV/
 htmlcov/
 tests/results/
 coverage.xml
-*.txt
-!PUERTOS.md
-!ARQUITECTURA.md
-!README.md
-!TESTS.md
-!EVOLUCION.md
-!COMPARATIVA.md
+coverage_report.txt
+coverage_result.txt
+test_output.txt
+test_results.txt
 
 # Environment variables
 .env
 .env.*
 !.env.example
+
+# Docker / Database
+*.log
+*.pid
+*.sock
+*.db
+db_data/
+pgdata/
+*.sqlite3
+volumes/
 
 # OS / IDE
 .vscode/
