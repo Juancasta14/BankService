@@ -22,14 +22,28 @@ services:
     env_file:
       - .env
     environment:
-    #  DB_USER: banco_user
-     # DB_PASSWORD: banco_password
+      # ── Elige el proveedor de BD cambiando DB_PROVIDER ─────────────
+      # "postgres"  → PostgreSQL local (descomentar bloque #db arriba)
+      # "supabase"  → Supabase remoto con SSL (credenciales en .env)
+      # "memory"    → SQLite en RAM (sin BD, solo para pruebas rápidas)
+      DB_PROVIDER: postgres      # ← CAMBIAR AQUÍ
+
+      # ── Variables para DB_PROVIDER=postgres ────────────────────────
+      #DB_USER: banco_user
+      #DB_PASSWORD: banco_password
       #DB_HOST: db
-      #DB_PORT: 5432  
+      #DB_PORT: 5432
       #DB_NAME: banco_db
       #DB_SSLMODE: "disable"
 
-      #LOGIN_EVENTS_URL: "https://4uxfgmeuzqj4j57mrmlkjsv7fy0kvydz.lambda-url.us-east-1.on.aws/"
+      # ── Variables para DB_PROVIDER=supabase ────────────────────────
+      # (o poner DATABASE_URL completa en el .env)
+      #DB_USER: postgres.xxxxxxxxxxxx
+      #DB_PASSWORD: tu_password_supabase
+      #DB_HOST: aws-0-us-east-1.pooler.supabase.com
+      #DB_PORT: 6543
+      #DB_NAME: postgres
+
       LOGIN_EVENTS_SECRET: "Super_secret"
       SERVICE_NAME: "bankservice"
       ENVIRONMENT: "dev"
