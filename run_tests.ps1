@@ -43,6 +43,11 @@ $testExitCode = $LASTEXITCODE
 Write-Host "`n=========================================" -ForegroundColor Cyan
 if ($testExitCode -eq 0) {
     Write-Host "¡Todos los tests pasaron exitosamente! 🎉" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Nota sobre las advertencias (Warnings):" -ForegroundColor Yellow
+    Write-Host "- Pydantic V2: Pide usar 'model_config' en lugar de 'class Config:'." -ForegroundColor Gray
+    Write-Host "- Datetime: 'datetime.utcnow()' está obsoleto, recomienda 'datetime.now(datetime.UTC)'." -ForegroundColor Gray
+    Write-Host "- Pytest return: Advierte que un test está devolviendo un valor (order_id) en vez de None." -ForegroundColor Gray
 } else {
     Write-Host "Algunos tests fallaron. Revisa el log de arriba. ❌" -ForegroundColor Red
 }
