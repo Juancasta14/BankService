@@ -7,9 +7,11 @@ from sqlalchemy.orm import sessionmaker
 #  Allowed values: "postgres" | "supabase" | "memory"
 #  Set in .env or docker-compose environment section.
 # ─────────────────────────────────────────────────────────────────
+from typing import Any
+
 DB_PROVIDER = os.getenv("DB_PROVIDER", "supabase").lower()
 
-connect_args = {}
+connect_args: dict[str, Any] = {}
 
 if DB_PROVIDER == "memory":
     # SQLite en RAM — útil para desarrollo rápido sin Docker
@@ -20,33 +22,42 @@ elif DB_PROVIDER == "supabase":
     # Supabase (PostgreSQL remoto con SSL obligatorio)
     DATABASE_URL = os.getenv("DATABASE_URL")
     if not DATABASE_URL:
-        DB_USER     = os.environ["DB_USER"]
-        DB_PASSWORD = os.environ["DB_PASSWORD"]
-        DB_HOST     = os.environ["DB_HOST"]
-        DB_PORT     = os.getenv("DB_PORT", "5432")
+        DB_USER     = os.getenv("DB_USER")
+        DB_PASSWORD = os.getenv("DB_PASSWORD")
+        DB_HOST     = os.getenv("DB_HOST")
+        DB_PORT     = os.getenv("DB_PORT", "6543")
         DB_NAME     = os.getenv("DB_NAME", "postgres")
-        DATABASE_URL = (
-            f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}"
-            f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-            f"?sslmode=require"             # Supabase siempre exige SSL
-        )
+
+        if not all([DB_USER, DB_PASSWORD, DB_HOST]):
+            # En vez de KeyError, damos un mensaje más claro o fallamos solo al conectar
+            DATABASE_URL = "postgresql://missing_user:missing_pass@missing_host:5432/missing_db"
+        else:
+            DATABASE_URL = (
+                f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}"
+                f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+                f"?sslmode=require"
+            )
     connect_args["options"] = "-c search_path=public"
 
 else:
     # postgres — PostgreSQL local (Docker o instancia propia sin SSL)
     DATABASE_URL = os.getenv("DATABASE_URL")
     if not DATABASE_URL:
-        DB_USER     = os.environ["DB_USER"]
-        DB_PASSWORD = os.environ["DB_PASSWORD"]
-        DB_HOST     = os.environ["DB_HOST"]
+        DB_USER     = os.getenv("DB_USER")
+        DB_PASSWORD = os.getenv("DB_PASSWORD")
+        DB_HOST     = os.getenv("DB_HOST")
         DB_PORT     = os.getenv("DB_PORT", "5432")
         DB_NAME     = os.getenv("DB_NAME", "postgres")
         DB_SSLMODE  = os.getenv("DB_SSLMODE", "disable")
-        DATABASE_URL = (
-            f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}"
-            f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-            f"?sslmode={DB_SSLMODE}"
-        )
+
+        if not all([DB_USER, DB_PASSWORD, DB_HOST]):
+            DATABASE_URL = "postgresql://missing_user:missing_pass@missing_host:5432/missing_db"
+        else:
+            DATABASE_URL = (
+                f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}"
+                f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+                f"?sslmode={DB_SSLMODE}"
+            )
     connect_args["options"] = "-c search_path=public"
 
 # ─────────────────────────────────────────────────────────────────
