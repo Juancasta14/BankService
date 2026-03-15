@@ -93,3 +93,238 @@ graph TD
 
 3. **Base de Datos (`app/docker-compose`)**:
    - Base de datos relacional (PostgreSQL) gestionada de forma externa al código fuente y enrutada por Docker.
+
+---
+
+## Diagramas C4
+
+### C4 — Nivel 1: Contexto del Sistema
+
+> Visión de alto nivel: actores externos y el sistema completo.
+
+```mermaid
+graph TD
+    classDef person fill:#08427b,color:#fff,stroke:#052e56
+    classDef system fill:#1168bd,color:#fff,stroke:#0b4884
+    classDef external fill:#999,color:#fff,stroke:#666
+
+    User(["👤 Usuario / Cliente\n(Navega por el banco)"]):::person
+    PSE(["🏦 Pasarela PSE\n(Sistema externo de pagos)"]):::external
+    Lambda(["⚡ AWS Lambda\n(Servicio de notificaciones de login)"]):::external
+
+    BankSystem["🏛️ BankService\n(Sistema Bancario Hexagonal)\n\nFastAPI + PostgreSQL"]:::system
+
+    User -->|"Consultar cuentas,\ntransferir, pagar con PSE"| BankSystem
+    BankSystem -->|"Redirige al usuario\na pasarela real"| PSE
+    PSE -->|"Webhook callback\n(resultado del pago)"| BankSystem
+    BankSystem -->|"Notificar intento de login\n(éxito o fallo)"| Lambda
+```
+
+---
+
+### C4 — Nivel 2: Contenedores
+
+> Qué aplicaciones / servicios componen el sistema.
+
+```mermaid
+graph TD
+    classDef person fill:#08427b,color:#fff,stroke:#052e56
+    classDef container fill:#1168bd,color:#fff,stroke:#0b4884
+    classDef db fill:#16a085,color:#fff,stroke:#0e6655
+    classDef external fill:#999,color:#fff,stroke:#666
+
+    User(["👤 Usuario"]):::person
+    PSE(["🏦 Pasarela PSE"]):::external
+    Lambda(["⚡ AWS Lambda\nLogin Notifier"]):::external
+
+    Flask["🖥️ Flask App\n(Frontend Web)\nPuerto :80\n\nTemplates + Jinja2\nLlama a FastAPI via HTTP"]:::container
+    FastAPI["⚙️ FastAPI App\n(Backend API REST)\nPuerto :8000\n\nArquitectura Hexagonal\nUvicorn + SQLAlchemy"]:::container
+    DB[("🗄️ PostgreSQL\n(Supabase / Docker)\nPuerto :5432")]:::db
+
+    User -->|"HTTP (Navegador)"| Flask
+    Flask -->|"REST/JSON\nJWT Header"| FastAPI
+    User --->|"Redirección PSE"| FastAPI
+    PSE -->|"POST /callback"| FastAPI
+    FastAPI -->|"SQL / ORM"| DB
+    FastAPI -->|"POST Eventos de Login"| Lambda
+```
+
+---
+
+### C4 — Nivel 3: Componentes (FastAPI App)
+
+> Detalle interno del contenedor `fastapi_app` y sus componentes reales.
+
+```mermaid
+graph TD
+    classDef inbound fill:#2196F3,color:#fff,stroke:#1565C0
+    classDef app fill:#4CAF50,color:#fff,stroke:#2E7D32
+    classDef domain fill:#9C27B0,color:#fff,stroke:#6A1B9A
+    classDef outbound fill:#FF9800,color:#fff,stroke:#E65100
+    classDef port fill:#607D8B,color:#fff,stroke:#37474F,stroke-dasharray: 5 5
+
+    subgraph Inbound ["🔵 Adaptadores de Entrada (adapters/inbound/http/routes/)"]
+        AuthR["auth_routes.py\nPOST /auth/login"]:::inbound
+        CustR["customers.py\nGET /customers/{id}/..."]:::inbound
+        TransR["transfers.py\nPOST /customers/{id}/transfer"]:::inbound
+        PSEPay["pse_payments.py\nPOST /payments"]:::inbound
+        PSEGw["pse_gateway.py\nGET /pse-gateway/{id}"]:::inbound
+        PSECb["pse_callback.py\nPOST /callback"]:::inbound
+        PayQ["payments_query.py\nGET /payments/{id}"]:::inbound
+    end
+
+    subgraph Application ["🟢 Capa de Aplicación (application/)"]
+        LoginSvc["LoginService\nlogin_service.py"]:::app
+        AuthSvc["AuthenticateService\nauthenticate_service.py"]:::app
+        TransSvc["TransferService\ntransfer_service.py"]:::app
+        GetAccSvc["GetAccountsService"]:::app
+        GetMovSvc["GetMovementsService"]:::app
+        GetWalSvc["GetWalletService"]:::app
+        GetSumSvc["GetSummaryService"]:::app
+        CreatePSE["CreatePSEPaymentService"]:::app
+        GetPSE["GetPSEPaymentService"]:::app
+        ProcGw["ProcessPSEGatewayService"]:::app
+        ProcCb["ProcessPSECallbackService"]:::app
+    end
+
+    subgraph Ports ["⚙️ Puertos (Interfaces Abstractas)"]
+        UserRepo["UserRepository (ABC)"]:::port
+        AccRepo["AccountsRepository (Protocol)"]:::port
+        MovRepo["MovementsRepository (Protocol)"]:::port
+        WalRepo["WalletsRepository (Protocol)"]:::port
+        PseRepo["PSETransactionRepository"]:::port
+        UoW["UnitOfWork (ABC)"]:::port
+        Hasher["PasswordHasher (ABC)"]:::port
+        TokenSvc["TokenService (ABC)"]:::port
+        Notifier["LoginNotifier (ABC)"]:::port
+    end
+
+    subgraph Domain ["🟣 Dominio (domain/)"]
+        UserEnt["User (dataclass)"]:::domain
+        ExcAuth["InvalidCredentials\nUserNotFound"]:::domain
+        ExcBank["InsufficientFunds\nTransferError"]:::domain
+        ExcPSE["PSEExceptions"]:::domain
+    end
+
+    subgraph Outbound ["🟠 Adaptadores de Salida (adapters/outbound/persistence/sqlalchemy/)"]
+        UserRepSQL["UserRepositorySQLAlchemy"]:::outbound
+        AccRepSQL["AccountsRepositorySQLAlchemy"]:::outbound
+        MovRepSQL["MovementsRepositorySQLAlchemy"]:::outbound
+        WalRepSQL["WalletsRepositorySQLAlchemy"]:::outbound
+        PseRepSQL["PSETransactionRepositorySQLAlchemy"]:::outbound
+        UoWSQL["UnitOfWorkSQLAlchemy"]:::outbound
+    end
+
+    AuthR --> LoginSvc & AuthSvc
+    CustR --> GetAccSvc & GetMovSvc & GetWalSvc & GetSumSvc
+    TransR --> TransSvc
+    PSEPay --> CreatePSE
+    PSEGw --> ProcGw
+    PSECb --> ProcCb
+    PayQ --> GetPSE
+
+    LoginSvc --> UserRepo & Hasher & TokenSvc & Notifier
+    AuthSvc --> TokenSvc & UserRepo
+    TransSvc --> AccRepo & MovRepo & UoW
+    GetAccSvc --> AccRepo
+    GetMovSvc --> MovRepo
+    GetWalSvc --> WalRepo
+    GetSumSvc --> AccRepo & WalRepo
+    CreatePSE --> PseRepo & AccRepo
+    GetPSE --> PseRepo
+    ProcGw --> PseRepo & AccRepo & UoW
+    ProcCb --> PseRepo & AccRepo & UoW
+
+    Application --> Domain
+
+    UserRepSQL -.->|implementa| UserRepo
+    AccRepSQL -.->|implementa| AccRepo
+    MovRepSQL -.->|implementa| MovRepo
+    WalRepSQL -.->|implementa| WalRepo
+    PseRepSQL -.->|implementa| PseRepo
+    UoWSQL -.->|implementa| UoW
+```
+
+---
+
+## Vista Hexagonal (Ports & Adapters)
+
+> Representación clásica del patrón Hexagonal, mostrando cómo el núcleo se protege del exterior mediante puertos.
+
+```mermaid
+graph LR
+    classDef outer fill:#f5f5f5,stroke:#bbb,color:#333
+    classDef port fill:#607D8B,color:#fff,stroke:#37474F,stroke-dasharray:5 5
+    classDef core fill:#4CAF50,color:#fff,stroke:#2E7D32
+    classDef domain fill:#9C27B0,color:#fff,stroke:#6A1B9A
+    classDef inAdapter fill:#2196F3,color:#fff,stroke:#1565C0
+    classDef outAdapter fill:#FF9800,color:#fff,stroke:#E65100
+
+    subgraph Externos_Izq ["Actores Primarios (Drivers)"]
+        Browser["🌐 Flask\nBrowser"]:::outer
+        PSEExt["🏦 PSE\nGateway"]:::outer
+    end
+
+    subgraph InboundAdapters ["Adaptadores de Entrada\n(adapters/inbound/http/)"]
+        AuthRoute["auth_routes.py"]:::inAdapter
+        CustRoute["customers.py\ntransfers.py"]:::inAdapter
+        PSERoute["pse_payments.py\npse_gateway.py\npse_callback.py\npayments_query.py"]:::inAdapter
+    end
+
+    subgraph HexCore ["⬡  NÚCLEO HEXAGONAL"]
+        subgraph InPorts ["Puertos de Entrada"]
+            ILogin["LoginService"]:::port
+            IAuth["AuthenticateService"]:::port
+            ICustomer["CustomerServices"]:::port
+            IPSE["PSE Services"]:::port
+        end
+
+        subgraph Domain ["Dominio\n(domain/)"]
+            DomCore["User · Account\nInsufficientFunds\nInvalidCredentials\nPSEExceptions"]:::domain
+        end
+
+        subgraph OutPorts ["Puertos de Salida (ABC/Protocol)"]
+            PUserRepo["UserRepository"]:::port
+            PAccRepo["AccountsRepository"]:::port
+            PMovRepo["MovementsRepository"]:::port
+            PWalRepo["WalletsRepository"]:::port
+            PPseRepo["PSERepository"]:::port
+            PUoW["UnitOfWork"]:::port
+            PHasher["PasswordHasher"]:::port
+            PToken["TokenService"]:::port
+            PNotif["LoginNotifier"]:::port
+        end
+    end
+
+    subgraph OutboundAdapters ["Adaptadores de Salida\n(adapters/outbound/persistence/sqlalchemy/)"]
+        SQLRepos["*RepositorySQLAlchemy\nUnitOfWorkSQLAlchemy"]:::outAdapter
+        JWTUtils["JWT & Hashing\n(python-jose, passlib)"]:::outAdapter
+        HTTPNotif["HTTP Notifier\n(AWS Lambda URL)"]:::outAdapter
+    end
+
+    subgraph Externos_Der ["Actores Secundarios (Driven)"]
+        PG[("🗄️ PostgreSQL\n(Supabase)")]:::outer
+        Lambda["⚡ AWS Lambda\nLogin Events"]:::outer
+    end
+
+    Browser -->|"HTTP REST"| AuthRoute & CustRoute
+    PSEExt -->|"Webhook POST"| PSERoute
+
+    AuthRoute --> ILogin & IAuth
+    CustRoute --> ICustomer
+    PSERoute --> IPSE
+
+    ILogin & IAuth & ICustomer & IPSE --> Domain
+
+    ILogin --> PUserRepo & PHasher & PToken & PNotif
+    IAuth --> PToken & PUserRepo
+    ICustomer --> PAccRepo & PMovRepo & PWalRepo & PUoW
+    IPSE --> PPseRepo & PAccRepo & PUoW
+
+    SQLRepos -.->|"implementa"| PUserRepo & PAccRepo & PMovRepo & PWalRepo & PPseRepo & PUoW
+    JWTUtils -.->|"implementa"| PHasher & PToken
+    HTTPNotif -.->|"implementa"| PNotif
+
+    SQLRepos -->|"SQL/ORM"| PG
+    HTTPNotif -->|"POST"| Lambda
+```
