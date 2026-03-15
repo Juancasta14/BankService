@@ -1,8 +1,13 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship, declarative_base
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import os
+import sys
+
+# DEBUG para CI
+DB_PROVIDER = os.getenv("DB_PROVIDER", "supabase").lower()
+print(f"DEBUG: models.py loaded with DB_PROVIDER={DB_PROVIDER}", file=sys.stderr)
 
 Base = declarative_base()
 
@@ -91,8 +96,8 @@ class PSETransactionDB(Base):
     return_url_success = Column(String, nullable=True)
     return_url_failure = Column(String, nullable=True)
 
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     expires_at = Column(DateTime, nullable=True)
 
     account = relationship("AccountDB", backref="pse_transactions")
