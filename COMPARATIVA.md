@@ -42,7 +42,7 @@ En el proyecto monolítico original (`Banco_monolitico`), las decisiones solían
 *En el monolito, las "entidades" eran los mismos modelos de SQLAlchemy (ej. `class User(Base)`), combinando reglas de negocio con detalles de cómo guardar en base de datos. Si se reestructuraba la tabla, se rompía la regla de negocio.*
 
 **¿POR QUÉ el nuevo diseño?**
-- **Para proteger la ignorancia de persistencia:** Nuestras nuevas Entidades de Dominio (`User`, `Account`, etc.) se diseñaron como clases puras (`@dataclass` de Python). La decisión de remover la herencia de `Base` (SQLAlchemy) en el dominio fue **obligada** para garantizar que un cambio de base de datos (Ej: migrar a MongoDB o PostgreSQL) jamás te obligue a reescribir la lógica de cómo se crea una cuenta o se valida un saldo insuficiente. 
+- **Para proteger la ignorancia de persistencia:** Nuestras nuevas Entidades de Dominio (`User`, `Account`, etc.) se diseñaron como clases puras (`@dataclass` de Python). La decisión de remover la herencia de `Base` (SQLAlchemy) en el dominio fue **obligada** para garantizar que un cambio de base de datos (Ej: migrar a MongoDB o PostgreSQL) jamás obligue a reescribir la lógica de cómo se crea una cuenta o se valida un saldo insuficiente. 
 - **Para encapsular invariantes:** Al no depender de Pydantic ni FastAPI en el dominio, pudimos crear métodos limpios (`account.withdraw(amount)`) que contienen el 100% de la regla de la transferencia (por qué y cuándo es válida), impidiendo que otra capa modifique el saldo directamente como ocurría en el `main.py` monolítico.
 
 #### 2. Objetos de Valor (Value Objects)
