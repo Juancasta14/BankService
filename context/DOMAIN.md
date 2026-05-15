@@ -13,7 +13,7 @@
 ## 2. Aggregate roots
 Dependiendo del contexto (Bounded Context), el sistema usa diferentes Aggregate Roots:
 - Para el flujo de autenticación, `User` es el aggregate root.
-- Para las operaciones financieras, `Account` actúa como la entidad principal que debe proteger las invariantes de negocio (su balance) antes de permitir que se generen `Movement`s. Ninguna parte del sistema puede manipular saldos evadiendo las validaciones del dominio.
+- Para las operaciones financieras, `Account` actúa como la entidad principal que debe proteger las invariantes de negocio (su balance) antes de permitir que se generen `Movement`. Ninguna parte del sistema puede manipular saldos evadiendo las validaciones del dominio.
 
 ## 3. Invariantes
 - **INV-01 (Saldo Positivo):** Una cuenta nunca puede quedar con saldo negativo. Si el balance no cubre el monto a debitar, la operación es estrictamente rechazada.
@@ -35,6 +35,6 @@ La lógica central de la capa de aplicación respeta estas operaciones:
 - Validaciones *fail-fast*: Antes de hacer cualquier cálculo matemático, los servicios deben verificar la existencia de los recursos (ej. verificar que origen y destino existan) y arrojar excepciones del dominio.
 
 ## 6. Reglas de nomenclatura y diseño
-- **Inglés como idioma del código:** A diferencia del proyecto Kanban, en BankService todas las entidades, variables y clases están en inglés (`User`, `Account`, `BankingError`) para alinear con estándares de la industria.
+- **Inglés como idioma del código:** en todas las entidades, variables y clases están en inglés (`User`, `Account`, `BankingError`) para alinear con estándares de la industria.
 - **Errores expresivos y puros:** Los errores de negocio son clases que heredan de una base genérica (ej. `BankingError` -> `Exception`), sin sufijos técnicos innecesarios (se llama `InsufficientFunds`, no `InsufficientFundsException`).
 - **Interfaces Implícitas (Duck Typing):** Se utiliza activamente `typing.Protocol` para definir los puertos de los repositorios. Esto evita obligar a las clases de infraestructura a heredar forzosamente de las abstracciones del dominio, promoviendo el aislamiento real.
