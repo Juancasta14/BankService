@@ -195,13 +195,13 @@ Para habilitar la conexión, asegúrate de contar con el archivo `.mcp.json` en 
 A continuación, ejemplos reales de las capacidades que otorga el MCP de Supabase conectado al asistente:
 
 **1. Actualización de un registro y confirmación de estado:**
-![Actualización de registro (PSE Transactions)](./assets/mcp_update_record.png)
+![Actualización de registro (PSE Transactions)](./assets/mcp_update_record.jpeg)
 
 **2. Consulta directa de los últimos registros de transacciones:**
-![Consulta de registros](./assets/mcp_query_records.png)
+![Consulta de registros](./assets/mcp_query_records.jpeg)
 
 **3. Ejecución de comandos SQL (Activación de RLS para las tablas):**
-![Activación de RLS y Listado de tablas](./assets/mcp_rls_migration.png)
+![Activación de RLS y Listado de tablas](./assets/mcp_rls_migration.jpeg)
 
 ---
 
