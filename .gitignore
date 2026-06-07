@@ -44,6 +44,10 @@ test_results.txt
 .env.*
 !.env.example
 
+# Agents
+.agents/
+.antigravitycli/
+
 # Docker / Database
 *.log
 *.pid

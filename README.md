@@ -159,6 +159,52 @@ La documentación interactiva (Swagger UI) estará disponible en [http://localho
 
 ---
 
+## 🤖 Integración con Supabase MCP
+
+Este proyecto incluye soporte para **Model Context Protocol (MCP)**, permitiendo a los asistentes de inteligencia artificial (como Antigravity IDE, Cursor o Windsurf) conectarse directamente con la base de datos remota de Supabase. A través de MCP, la IA puede ejecutar consultas SQL, inspeccionar el esquema y aplicar migraciones de forma segura interactuando con el proyecto.
+
+### Configuración de `.mcp.json`
+
+Para habilitar la conexión, asegúrate de contar con el archivo `.mcp.json` en la raíz del proyecto (o en la ruta `.agents/mcp_config.json` según tu IDE) con la siguiente configuración:
+
+```json
+{
+  "mcpServers": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref={TU_PROJECT_REFE}"
+    }
+  }
+}
+```
+*(Reemplaza `{TU_PROJECT_REFE}` por el ref ID real de tu proyecto).*
+
+### Paso a paso para correrlo con Antigravity CLI
+
+1. **Crear la configuración:** En la raíz de tu proyecto, crea una carpeta llamada `.agents`. Dentro de ella, crea el archivo `mcp_config.json` e inserta el JSON mostrado arriba (asegurándote de colocar tu `project_ref`).
+2. **Lanzar el CLI:** Abre tu terminal en la ruta del proyecto y ejecuta el comando de Antigravity:
+   ```powershell
+   agy
+   ```
+3. **Solicitar una acción:** Dentro del chat del CLI, escribe un prompt como: *"¿Cuáles son las tablas de mi base de datos?"* o *"Tráeme los 10 primeros registros de pse_transactions"*.
+4. **Autenticación (Logeo):** Al intentar conectarse por primera vez, el CLI detectará que requiere autorización y abrirá automáticamente tu navegador web. Inicia sesión en tu cuenta de Supabase y aprueba los permisos de acceso.
+5. **Aprobación y Ejecución:** Regresa a la terminal. A partir de este momento, la IA (Antigravity) tendrá habilitadas las herramientas como `supabase/execute_sql` o `supabase/list_tables` para trabajar en tu base de datos directamente desde la consola.
+
+### Evidencia de Conexión (Pantallazos)
+
+A continuación, ejemplos reales de las capacidades que otorga el MCP de Supabase conectado al asistente:
+
+**1. Actualización de un registro y confirmación de estado:**
+![Actualización de registro (PSE Transactions)](./assets/mcp_update_record.png)
+
+**2. Consulta directa de los últimos registros de transacciones:**
+![Consulta de registros](./assets/mcp_query_records.png)
+
+**3. Ejecución de comandos SQL (Activación de RLS para las tablas):**
+![Activación de RLS y Listado de tablas](./assets/mcp_rls_migration.png)
+
+---
+
 ## 🔑 Endpoints Principales
 
 | Método | Ruta | Descripción |
